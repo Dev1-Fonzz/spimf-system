@@ -207,6 +207,114 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        /* Admin Panel */
+        .admin-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1001;
+        }
+
+        .admin-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .admin-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1002;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .admin-modal.active {
+            display: flex;
+        }
+
+        .admin-content {
+            background: var(--dark-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .admin-content h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .admin-status {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: rgba(52, 168, 83, 0.2);
+            color: var(--secondary-color);
+            border: 1px solid var(--secondary-color);
+        }
+
+        .status-blocked {
+            background: rgba(234, 67, 53, 0.2);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .block-message {
+            display: none;
+            background: rgba(234, 67, 53, 0.1);
+            border: 1px solid var(--danger-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .block-message h3 {
+            color: var(--danger-color);
+            margin-bottom: 10px;
+        }
+
         /* Main Content */
         .main-content {
             display: none;
@@ -596,6 +704,17 @@
                 flex-direction: column;
                 gap: 10px;
             }
+            
+            .admin-panel {
+                top: 5px;
+                right: 5px;
+            }
+            
+            .admin-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
         }
 
         /* About Page */
@@ -688,6 +807,46 @@
     </style>
 </head>
 <body>
+    <!-- Admin Panel -->
+    <div class="admin-panel">
+        <button class="admin-btn" id="adminBtn">⚙️</button>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-content">
+            <h2>🛡️ Admin Control Panel</h2>
+            
+            <div class="admin-status" id="adminStatus">
+                Loading system status...
+            </div>
+            
+            <div class="admin-actions">
+                <button class="btn btn-secondary" id="activateSystem">✅ Aktifkan Sistem</button>
+                <button class="btn btn-danger" id="blockSystem">🚫 Block Sistem</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="blockReason">📝 Sebab Block (Optional):</label>
+                <input type="text" id="blockReason" class="admin-input" placeholder="Masukkan sebab block sistem...">
+            </div>
+            
+            <div class="form-group">
+                <label for="adminPassword">🔑 Password Admin:</label>
+                <input type="password" id="adminPassword" class="admin-input" placeholder="Masukkan password admin">
+            </div>
+            
+            <button class="btn btn-primary" id="saveAdminConfig">💾 Simpan Konfigurasi</button>
+            <button class="btn" id="closeAdminModal">✕ Tutup</button>
+            
+            <div class="block-message" id="blockMessage">
+                <h3>🚫 SISTEM DI BLOCK</h3>
+                <p id="blockReasonText"></p>
+                <p>👨‍💻 Hubungi Admin: pfareezonzz01@gmail.com</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="radar-container">
@@ -1020,6 +1179,16 @@
         <p>Sistem akan dibuka semula dalam:</p>
     </div>
 
+    <!-- System Block Screen -->
+    <div class="lock-screen" id="systemBlockScreen" style="display: none;">
+        <h2>🚫 SISTEM DI BLOCK</h2>
+        <p id="blockScreenReason">Sistem SPIMF telah di-block oleh admin.</p>
+        <p>👨‍💻 Sila hubungi admin untuk bantuan:</p>
+        <p>📧 pfareezonzz01@gmail.com</p>
+        <p>📧 developerfareezonzz@gmail.com</p>
+        <div class="countdown" id="retryCountdown">Menyambung semula dalam: 10 saat</div>
+    </div>
+
     <!-- Floating Notification -->
     <div class="floating-notification" id="floatingNotification">
         <div class="notification-content">
@@ -1029,6 +1198,12 @@
     </div>
 
     <script>
+        // Admin Configuration
+        const ADMIN_CONFIG = {
+            password: "SPIMF2025", // Default admin password
+            configFile: "https://raw.githubusercontent.com/[USERNAME]/[REPO]/main/admin-config.json"
+        };
+
         // DOM Elements
         const loadingScreen = document.getElementById('loadingScreen');
         const mainContent = document.getElementById('mainContent');
@@ -1046,12 +1221,35 @@
         const notificationMessage = document.getElementById('notificationMessage');
         const closeNotification = document.getElementById('closeNotification');
         const lockScreen = document.getElementById('lockScreen');
+        const systemBlockScreen = document.getElementById('systemBlockScreen');
         const countdownTimer = document.getElementById('countdownTimer');
+        const retryCountdown = document.getElementById('retryCountdown');
+        const blockScreenReason = document.getElementById('blockScreenReason');
         
+        // Admin Elements
+        const adminBtn = document.getElementById('adminBtn');
+        const adminModal = document.getElementById('adminModal');
+        const adminStatus = document.getElementById('adminStatus');
+        const activateSystemBtn = document.getElementById('activateSystem');
+        const blockSystemBtn = document.getElementById('blockSystem');
+        const blockReasonInput = document.getElementById('blockReason');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const saveAdminConfigBtn = document.getElementById('saveAdminConfig');
+        const closeAdminModalBtn = document.getElementById('closeAdminModal');
+        const blockMessage = document.getElementById('blockMessage');
+        const blockReasonText = document.getElementById('blockReasonText');
+
+        // System State
+        let systemState = {
+            status: "active",
+            blockReason: "",
+            lastChecked: Date.now()
+        };
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if system should be locked
-            checkSystemLock();
+            // Check system status first
+            checkSystemStatus();
             
             // Update date and time
             updateDateTime();
@@ -1070,6 +1268,70 @@
             }, 3000);
         });
 
+        // Check system status from GitHub
+        async function checkSystemStatus() {
+            try {
+                // In a real implementation, this would fetch from GitHub
+                // For demo, we'll use localStorage
+                const savedState = localStorage.getItem('spimf_admin_config');
+                
+                if (savedState) {
+                    systemState = JSON.parse(savedState);
+                }
+                
+                // Check if system is blocked
+                if (systemState.status === "blocked") {
+                    showBlockScreen();
+                } else {
+                    // Check if system should be locked based on time
+                    checkSystemLock();
+                }
+                
+                updateAdminStatusDisplay();
+                
+            } catch (error) {
+                console.error('Error checking system status:', error);
+            }
+        }
+
+        // Update admin status display
+        function updateAdminStatusDisplay() {
+            if (systemState.status === "active") {
+                adminStatus.className = "admin-status status-active";
+                adminStatus.innerHTML = "✅ STATUS: SISTEM AKTIF";
+                blockMessage.style.display = "none";
+            } else {
+                adminStatus.className = "admin-status status-blocked";
+                adminStatus.innerHTML = "🚫 STATUS: SISTEM DI BLOCK";
+                blockReasonText.textContent = systemState.blockReason || "Tiada sebab dinyatakan";
+                blockMessage.style.display = "block";
+            }
+        }
+
+        // Show block screen
+        function showBlockScreen() {
+            systemBlockScreen.style.display = "flex";
+            mainContent.style.display = "none";
+            loadingScreen.classList.add('hidden');
+            
+            if (systemState.blockReason) {
+                blockScreenReason.textContent = `Sebab: ${systemState.blockReason}`;
+            }
+            
+            let countdown = 10;
+            retryCountdown.textContent = `Menyambung semula dalam: ${countdown} saat`;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                retryCountdown.textContent = `Menyambung semula dalam: ${countdown} saat`;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    checkSystemStatus(); // Check status again
+                }
+            }, 1000);
+        }
+
         // Update date and time
         function updateDateTime() {
             const now = new Date();
@@ -1087,6 +1349,27 @@
 
         // Setup event listeners
         function setupEventListeners() {
+            // Admin functionality
+            adminBtn.addEventListener('click', () => {
+                adminModal.classList.add('active');
+            });
+            
+            closeAdminModalBtn.addEventListener('click', () => {
+                adminModal.classList.remove('active');
+            });
+            
+            activateSystemBtn.addEventListener('click', () => {
+                activateSystem();
+            });
+            
+            blockSystemBtn.addEventListener('click', () => {
+                blockSystem();
+            });
+            
+            saveAdminConfigBtn.addEventListener('click', () => {
+                saveAdminConfig();
+            });
+            
             // Screen size selection
             smartphoneBtn.addEventListener('click', () => {
                 smartphoneBtn.classList.add('active');
@@ -1153,32 +1436,57 @@
             setupBackupControls();
         }
 
-        // Show a specific page
-        function showPage(pageId) {
-            hideAllPages();
-            document.getElementById(pageId).classList.add('active');
-        }
-
-        // Hide all pages
-        function hideAllPages() {
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
-            mainContent.classList.remove('active');
-        }
-
-        // Show notification
-        function showNotification(message) {
-            notificationMessage.textContent = message;
-            floatingNotification.classList.add('show');
+        // Admin functions
+        function activateSystem() {
+            if (adminPasswordInput.value !== ADMIN_CONFIG.password) {
+                showNotification('Password admin salah! ❌');
+                return;
+            }
             
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                floatingNotification.classList.remove('show');
-            }, 5000);
+            systemState.status = "active";
+            systemState.blockReason = "";
+            systemState.lastChecked = Date.now();
+            
+            localStorage.setItem('spimf_admin_config', JSON.stringify(systemState));
+            updateAdminStatusDisplay();
+            showNotification('Sistem berjaya diaktifkan! ✅');
+            
+            // Hide block screen if active
+            systemBlockScreen.style.display = "none";
+            mainContent.style.display = "block";
         }
 
-        // Check if system should be locked
+        function blockSystem() {
+            if (adminPasswordInput.value !== ADMIN_CONFIG.password) {
+                showNotification('Password admin salah! ❌');
+                return;
+            }
+            
+            systemState.status = "blocked";
+            systemState.blockReason = blockReasonInput.value || "Sistem di-block oleh admin";
+            systemState.lastChecked = Date.now();
+            
+            localStorage.setItem('spimf_admin_config', JSON.stringify(systemState));
+            updateAdminStatusDisplay();
+            showNotification('Sistem berjaya di-block! 🚫');
+            
+            // Show block screen
+            showBlockScreen();
+        }
+
+        function saveAdminConfig() {
+            if (adminPasswordInput.value !== ADMIN_CONFIG.password) {
+                showNotification('Password admin salah! ❌');
+                return;
+            }
+            
+            // In a real implementation, this would save to GitHub
+            // For demo, we'll use localStorage
+            localStorage.setItem('spimf_admin_config', JSON.stringify(systemState));
+            showNotification('Konfigurasi admin berjaya disimpan! 💾');
+        }
+
+        // Check if system should be locked based on time
         function checkSystemLock() {
             const now = new Date();
             const currentHour = now.getHours();
@@ -1243,6 +1551,31 @@
                     }
                 }, 60000);
             }
+        }
+
+        // Show a specific page
+        function showPage(pageId) {
+            hideAllPages();
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Hide all pages
+        function hideAllPages() {
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            mainContent.classList.remove('active');
+        }
+
+        // Show notification
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            floatingNotification.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                floatingNotification.classList.remove('show');
+            }, 5000);
         }
 
         // Setup Pengumuman Personal page
