@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPIMF - Sistem Pengurusan Identiti Membership FareezOnzz</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #34a853;
+            --accent-color: #fbbc05;
+            --danger-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: var(--light-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .radar-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+        }
+
+        .radar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radar::before {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(26, 115, 232, 0.4), transparent);
+            animation: radar-sweep 2s linear infinite;
+        }
+
+        .radar-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .radar-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes radar-sweep {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .loading-text {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .loading-text h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .screen-size-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .size-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            color: var(--light-color);
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .size-btn:hover {
+            background: rgba(26, 115, 232, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .size-btn.active {
+            background: var(--primary-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .accept-btn {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .about-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            width: 100%;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--accent-color);
+        }
+
+        .date-time {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .message-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--box-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .page-header h2 {
+            color: var(--accent-color);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--light-color);
+            font-size: 18px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            color: var(--primary-color);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            color: var(--light-color);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .recipient-container {
+            margin-bottom: 15px;
+        }
+
+        .recipient-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .status-complete {
+            background: rgba(52, 168, 83, 0.2);
+            color: var(--secondary-color);
+        }
+
+        .status-process {
+            background: rgba(251, 188, 5, 0.2);
+            color: var(--accent-color);
+        }
+
+        .status-failed {
+            background: rgba(234, 67, 53, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(26, 115, 232, 0.2);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Floating Notifications */
+        .floating-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--dark-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border-left: 4px solid var(--primary-color);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .floating-notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-notification {
+            background: none;
+            border: none;
+            color: var(--light-color);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Animation for computer loading */
+        .computer-animation {
+            width: 100px;
+            height: 80px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .monitor {
+            width: 80px;
+            height: 50px;
+            background: #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 70px;
+            height: 40px;
+            background: #0a0a0a;
+            margin: 5px auto;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #0f0, transparent);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+
+        .keyboard {
+            width: 60px;
+            height: 15px;
+            background: #222;
+            margin: 0 auto;
+            border-radius: 0 0 5px 5px;
+        }
+
+        /* Lock Screen */
+        .lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .lock-screen h2 {
+            color: var(--danger-color);
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .lock-screen p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .countdown {
+            font-size: 24px;
+            color: var(--accent-color);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .screen-size-selector {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        /* About Page */
+        .about-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .contact-email {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        .contact-email.blue {
+            color: var(--primary-color);
+        }
+
+        .contact-blog {
+            color: var(--text-color);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        /* Animation for satellite */
+        .satellite-animation {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .satellite {
+            width: 30px;
+            height: 15px;
+            background: #ccc;
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: orbit 8s linear infinite;
+        }
+
+        .satellite::before {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 30px;
+            background: #aaa;
+            top: -15px;
+            left: 12.5px;
+        }
+
+        @keyframes orbit {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg) translateX(60px) rotate(0deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg) translateX(60px) rotate(-360deg);
+            }
+        }
+
+        .earth {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(30deg, #1a5276, #27ae60);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(26, 115, 232, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="radar-container">
+            <div class="radar">
+                <div class="radar-center"></div>
+                <div class="radar-dot" style="top: 30%; left: 40%;"></div>
+                <div class="radar-dot" style="top: 60%; left: 70%;"></div>
+                <div class="radar-dot" style="top: 20%; left: 80%;"></div>
+            </div>
+        </div>
+        
+        <div class="loading-text">
+            <h1>👩‍💻 Welcome To System SPIMF</h1>
+            <p>Loading System Set-up...</p>
+        </div>
+        
+        <div class="screen-size-selector">
+            <button class="size-btn" id="smartphoneBtn">
+                📱 Smartphone
+            </button>
+            <button class="size-btn active" id="desktopBtn">
+                🖥️ Desktop
+            </button>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn about-btn" id="aboutBtn">
+                ⏸️ About
+            </button>
+            <button class="action-btn accept-btn" id="acceptBtn">
+                ▶️ Accept
+            </button>
+        </div>
+        
+        <div class="footer">
+            SPIMF Development 2025 - Sistem Pengurusan Identiti Membership FareezOnzz
+        </div>
+    </div>
+
+    <!-- About Page -->
+    <div class="page" id="aboutPage">
+        <div class="page-header">
+            <button class="back-btn" id="backFromAbout">←</button>
+            <h2>⏸️ About SPIMF Systems</h2>
+        </div>
+        
+        <div class="about-content">
+            <div class="contact-item">
+                <span>🏷️</span>
+                <span>SPIMF SYSTEMS 2025</span>
+            </div>
+            <div class="contact-item">
+                <span>📮</span>
+                <span>Development Of Fareezonzz</span>
+            </div>
+            <div class="contact-item">
+                <span>📮</span>
+                <span>Dev1Fonzz</span>
+            </div>
+            <div class="contact-item">
+                <span>📩</span>
+                <a href="mailto:pfareezonzz01@gmail.com" class="contact-email">pfareezonzz01@gmail.com</a>
+            </div>
+            <div class="contact-item">
+                <span>📩</span>
+                <a href="mailto:developerfareezonzz@gmail.com" class="contact-email blue">developerfareezonzz@gmail.com</a>
+            </div>
+            <div class="contact-item">
+                <span>📥</span>
+                <a href="https://rm-membersrblx.blogspot.com/" target="_blank" class="contact-blog">Official Blog Management</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1>👤 Home - SPIMF Systems</h1>
+            <div class="date-time" id="dateTime">
+                Loading date and time...
+            </div>
+        </div>
+        
+        <div class="message-box">
+            <p>Sistem Pengurusan Identiti Membership FareezOnzz Dibina Oleh Dev1-Fonzz Dan Development Of Fareezonzz</p>
+            <div class="satellite-animation">
+                <div class="earth"></div>
+                <div class="satellite"></div>
+            </div>
+        </div>
+        
+        <div class="computer-animation">
+            <div class="monitor">
+                <div class="screen">
+                    <div class="scan-line"></div>
+                </div>
+            </div>
+            <div class="keyboard"></div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card" data-page="pengumumanPage">
+                <div class="feature-icon">🗼</div>
+                <h3>Pengumuman Personal</h3>
+                <p>Hantar pengumuman melalui emel</p>
+            </div>
+            
+            <div class="feature-card" data-page="janakanPage">
+                <div class="feature-icon">🛰️</div>
+                <h3>Janakan IKAP</h3>
+                <p>Jana ID, kode dan akaun</p>
+            </div>
+            
+            <div class="feature-card" data-page="analisisPage">
+                <div class="feature-icon">📡</div>
+                <h3>Analisis Atas Talian</h3>
+                <p>Analisis data terperinci</p>
+            </div>
+            
+            <div class="feature-card" id="komunitiBtn">
+                <div class="feature-icon">📱</div>
+                <h3>Komuniti SPIMF</h3>
+                <p>Lawati komuniti kami</p>
+            </div>
+            
+            <div class="feature-card" data-page="helpPage">
+                <div class="feature-icon">👩‍💻</div>
+                <h3>Help Us / Contact Us</h3>
+                <p>Dapatkan bantuan</p>
+            </div>
+            
+            <div class="feature-card" data-page="cadanganPage">
+                <div class="feature-icon">📮</div>
+                <h3>Cadangan Pengubahsuaian</h3>
+                <p>Berikan cadangan anda</p>
+            </div>
+        </div>
+        
+        <!-- Backup Controls -->
+        <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+            <button class="btn btn-primary" id="backupBtn">📥 Backup Semua Data</button>
+            <button class="btn btn-secondary" id="importBtn">📤 Import Semua Data</button>
+            <button class="btn" id="autoBackupBtn">⌛ Backup Auto Setiap Perubahan</button>
+            <button class="btn" id="storageBtn">🗄️ Simpan Storage Browser</button>
+            <button class="btn" id="autoLockBtn">⏲️ Auto Lock Sistem</button>
+        </div>
+    </div>
+
+    <!-- Pengumuman Personal Page -->
+    <div class="page" id="pengumumanPage">
+        <div class="page-header">
+            <button class="back-btn" data-back>←</button>
+            <h2>🗼 Pengumuman Personal</h2>
+        </div>
+        
+        <div class="form-group">
+            <label for="senderEmail">📧 Alamat Email Penghantar</label>
+            <input type="email" id="senderEmail" class="form-control" placeholder="Masukkan alamat email anda">
+        </div>
+        
+        <div class="form-group">
+            <label for="emailSubject">📝 Tajuk Mesej Email</label>
+            <input type="text" id="emailSubject" class="form-control" placeholder="Masukkan tajuk mesej">
+        </div>
+        
+        <div class="form-group">
+            <label for="emailMessage">💬 Mesej Email</label>
+            <textarea id="emailMessage" class="form-control" rows="5" placeholder="Tulis mesej anda di sini"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>👥 Alamat Email Penerima</label>
+            <div class="recipient-container" id="recipientContainer">
+                <div class="recipient-row">
+                    <input type="email" class="form-control recipient-email" placeholder="Masukkan alamat email penerima">
+                    <button class="btn btn-danger btn-small remove-recipient">🗑️</button>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="addRecipient">➕ Tambah Penerima</button>
+        </div>
+        
+        <div class="form-group">
+            <button class="btn btn-primary" id="sendEmail">📨 Hantar Email</button>
+            <button class="btn btn-secondary" id="saveTemplate">💾 Simpan Template</button>
+            <button class="btn" id="loadTemplate">📂 Muat Naik Template</button>
+        </div>
+        
+        <div id="emailStatus" class="status-indicator status-process" style="display: none;">
+            🔔 Proses Menghantar Email...
+        </div>
+    </div>
+
+    <!-- Janakan IKAP Page -->
+    <div class="page" id="janakanPage">
+        <div class="page-header">
+            <button class="back-btn" data-back>←</button>
+            <h2>🛰️ Janakan IKAP</h2>
+        </div>
+        
+        <div class="form-group">
+            <label for="userAlias">👩‍💻 Nama Samaran</label>
+            <input type="text" id="userAlias" class="form-control" placeholder="Masukkan nama samaran">
+        </div>
+        
+        <div class="form-group">
+            <label for="generateCount">🔢 Jumlah untuk Dijanakan</label>
+            <input type="number" id="generateCount" class="form-control" value="1" min="1" max="100">
+        </div>
+        
+        <button class="btn btn-primary" id="generateBtn">📨 Penjanaan Langsung</button>
+        <button class="btn btn-secondary" id="copyAllBtn">📥 Salin Semuanya</button>
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>📮 BIL</th>
+                        <th>📔 ID CARD REGISTRATION</th>
+                        <th>📒 KODE USER</th>
+                        <th>📘 AKAUN GOOGLE</th>
+                        <th>📗 PASSWORD GOOGLE</th>
+                        <th>TINDAKAN</th>
+                    </tr>
+                </thead>
+                <tbody id="generatedData">
+                    <!-- Data akan diisi melalui JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Analisis Atas Talian Page -->
+    <div class="page" id="analisisPage">
+        <div class="page-header">
+            <button class="back-btn" data-back>←</button>
+            <h2>📡 Analisis Atas Talian</h2>
+        </div>
+        
+        <div class="satellite-animation">
+            <div class="earth"></div>
+            <div class="satellite"></div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <p>🛰️ Menunggu Maklumbalas dari Satelit Berdekatan</p>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="btn btn-primary" id="openAnalytics">Buka Analisis Data</button>
+        </div>
+    </div>
+
+    <!-- Help Us / Contact Us Page -->
+    <div class="page" id="helpPage">
+        <div class="page-header">
+            <button class="back-btn" data-back>←</button>
+            <h2>👩‍💻 Help Us / Contact Us</h2>
+        </div>
+        
+        <div class="form-group">
+            <label>📧 Pilih Akaun Email Untuk Sokongan</label>
+            <div class="contact-item" style="cursor: pointer;" data-email="pfareezonzz01@gmail.com">
+                <span>📩</span>
+                <span>pfareezonzz01@gmail.com</span>
+            </div>
+            <div class="contact-item" style="cursor: pointer;" data-email="developerfareezonzz@gmail.com">
+                <span>📩</span>
+                <span>developerfareezonzz@gmail.com</span>
+            </div>
+        </div>
+        
+        <div id="emailTemplate" style="display: none;">
+            <div class="form-group">
+                <label for="userName">👤 Nama</label>
+                <input type="text" id="userName" class="form-control" placeholder="Masukkan nama anda">
+            </div>
+            
+            <div class="form-group">
+                <label for="userPhone">📞 Nombor Telefon</label>
+                <input type="text" id="userPhone" class="form-control" placeholder="Masukkan nombor telefon">
+            </div>
+            
+            <div class="form-group">
+                <label for="problemDescription">⚠️ Masalah yang Dihadapi</label>
+                <textarea id="problemDescription" class="form-control" rows="5" placeholder="Terangkan masalah yang dihadapi..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <button class="btn btn-primary" id="sendHelpEmail">📨 Hantar Mesej Bantuan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cadangan Pengubahsuaian Page -->
+    <div class="page" id="cadanganPage">
+        <div class="page-header">
+            <button class="back-btn" data-back>←</button>
+            <h2>📮 Cadangan Pengubahsuaian</h2>
+        </div>
+        
+        <div class="form-group">
+            <label>📋 Pilih Jenis Cadangan</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                <button class="btn" data-suggestion="error">📥 Error-Fix</button>
+                <button class="btn" data-suggestion="update">📩 Kemaskini Data Ahli</button>
+                <button class="btn" data-suggestion="system-error">📮 Terjadi Ralat Pada Sistem</button>
+                <button class="btn" data-suggestion="other">Lain-lain</button>
+            </div>
+        </div>
+        
+        <div class="form-group" id="customSuggestion" style="display: none;">
+            <label for="suggestionText">💡 Cadangan Lain-lain</label>
+            <textarea id="suggestionText" class="form-control" rows="5" placeholder="Tulis cadangan anda di sini..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <button class="btn btn-primary" id="sendSuggestion">📨 Hantar Pesanan</button>
+        </div>
+    </div>
+
+    <!-- Lock Screen -->
+    <div class="lock-screen" id="lockScreen" style="display: none;">
+        <h2>🔒 Sistem Dikunci</h2>
+        <p>Sistem SPIMF kini ditutup dan tidak boleh diakses.</p>
+        <p>Sila kembali pada waktu operasi yang ditetapkan:</p>
+        <p>⏰ 6:00 pagi - 10:00 pagi</p>
+        <p>⏰ 1:00 petang - 6:00 petang</p>
+        <p>⏰ 10:00 malam - 12:00 malam</p>
+        <div class="countdown" id="countdownTimer">Mengira...</div>
+        <p>Sistem akan dibuka semula dalam:</p>
+    </div>
+
+    <!-- Floating Notification -->
+    <div class="floating-notification" id="floatingNotification">
+        <div class="notification-content">
+            <span id="notificationMessage">Pemberitahuan</span>
+            <button class="close-notification" id="closeNotification">✕</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loadingScreen = document.getElementById('loadingScreen');
+        const mainContent = document.getElementById('mainContent');
+        const aboutPage = document.getElementById('aboutPage');
+        const smartphoneBtn = document.getElementById('smartphoneBtn');
+        const desktopBtn = document.getElementById('desktopBtn');
+        const aboutBtn = document.getElementById('aboutBtn');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const backFromAbout = document.getElementById('backFromAbout');
+        const dateTimeElement = document.getElementById('dateTime');
+        const featureCards = document.querySelectorAll('.feature-card');
+        const pages = document.querySelectorAll('.page');
+        const backButtons = document.querySelectorAll('[data-back]');
+        const floatingNotification = document.getElementById('floatingNotification');
+        const notificationMessage = document.getElementById('notificationMessage');
+        const closeNotification = document.getElementById('closeNotification');
+        const lockScreen = document.getElementById('lockScreen');
+        const countdownTimer = document.getElementById('countdownTimer');
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if system should be locked
+            checkSystemLock();
+            
+            // Update date and time
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load saved data
+            loadSavedData();
+            
+            // Show loading screen for 3 seconds then hide
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                showNotification('Sistem SPIMF berjaya dimuatkan! 🎉');
+            }, 3000);
+        });
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            dateTimeElement.textContent = now.toLocaleDateString('ms-MY', options);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Screen size selection
+            smartphoneBtn.addEventListener('click', () => {
+                smartphoneBtn.classList.add('active');
+                desktopBtn.classList.remove('active');
+                document.body.classList.add('mobile-view');
+                showNotification('Mod Smartphone diaktifkan 📱');
+            });
+            
+            desktopBtn.addEventListener('click', () => {
+                desktopBtn.classList.add('active');
+                smartphoneBtn.classList.remove('active');
+                document.body.classList.remove('mobile-view');
+                showNotification('Mod Desktop diaktifkan 🖥️');
+            });
+            
+            // About and Accept buttons
+            aboutBtn.addEventListener('click', () => {
+                loadingScreen.classList.add('hidden');
+                aboutPage.classList.add('active');
+            });
+            
+            acceptBtn.addEventListener('click', () => {
+                loadingScreen.classList.add('hidden');
+                mainContent.classList.add('active');
+                showNotification('Selamat datang ke Sistem SPIMF! 👋');
+            });
+            
+            backFromAbout.addEventListener('click', () => {
+                aboutPage.classList.remove('active');
+                loadingScreen.classList.remove('hidden');
+            });
+            
+            // Feature cards navigation
+            featureCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const pageId = card.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                    } else if (card.id === 'komunitiBtn') {
+                        window.open('https://rm-membersrblx.blogspot.com/', '_blank');
+                    }
+                });
+            });
+            
+            // Back buttons
+            backButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    hideAllPages();
+                    mainContent.classList.add('active');
+                });
+            });
+            
+            // Close notification
+            closeNotification.addEventListener('click', () => {
+                floatingNotification.classList.remove('show');
+            });
+            
+            // Setup page-specific functionality
+            setupPengumumanPage();
+            setupJanakanPage();
+            setupAnalisisPage();
+            setupHelpPage();
+            setupCadanganPage();
+            setupBackupControls();
+        }
+
+        // Show a specific page
+        function showPage(pageId) {
+            hideAllPages();
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Hide all pages
+        function hideAllPages() {
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            mainContent.classList.remove('active');
+        }
+
+        // Show notification
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            floatingNotification.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                floatingNotification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Check if system should be locked
+        function checkSystemLock() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            // Convert to minutes since midnight for easier comparison
+            const currentTime = currentHour * 60 + currentMinute;
+            
+            // Define allowed time slots in minutes since midnight
+            const allowedSlots = [
+                { start: 6 * 60, end: 10 * 60 },    // 6:00 - 10:00
+                { start: 13 * 60, end: 18 * 60 },   // 13:00 - 18:00
+                { start: 22 * 60, end: 24 * 60 }    // 22:00 - 24:00
+            ];
+            
+            let isAllowed = false;
+            for (const slot of allowedSlots) {
+                if (currentTime >= slot.start && currentTime < slot.end) {
+                    isAllowed = true;
+                    break;
+                }
+            }
+            
+            if (!isAllowed) {
+                // Calculate next available time
+                let nextAvailable = null;
+                for (const slot of allowedSlots) {
+                    if (currentTime < slot.start) {
+                        nextAvailable = slot.start;
+                        break;
+                    }
+                }
+                
+                // If no slot found today, use first slot tomorrow
+                if (!nextAvailable) {
+                    nextAvailable = allowedSlots[0].start + 24 * 60; // Add 24 hours
+                }
+                
+                // Calculate time until next available slot
+                const timeUntilAvailable = nextAvailable - currentTime;
+                const hours = Math.floor(timeUntilAvailable / 60);
+                const minutes = timeUntilAvailable % 60;
+                
+                // Show lock screen
+                lockScreen.style.display = 'flex';
+                countdownTimer.textContent = `${hours} jam ${minutes} minit`;
+                
+                // Update countdown every minute
+                setInterval(() => {
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    const currentMinute = now.getMinutes();
+                    const currentTime = currentHour * 60 + currentMinute;
+                    
+                    const timeUntilAvailable = nextAvailable - currentTime;
+                    if (timeUntilAvailable <= 0) {
+                        location.reload(); // Reload page when system should be available
+                    } else {
+                        const hours = Math.floor(timeUntilAvailable / 60);
+                        const minutes = timeUntilAvailable % 60;
+                        countdownTimer.textContent = `${hours} jam ${minutes} minit`;
+                    }
+                }, 60000);
+            }
+        }
+
+        // Setup Pengumuman Personal page
+        function setupPengumumanPage() {
+            const addRecipientBtn = document.getElementById('addRecipient');
+            const recipientContainer = document.getElementById('recipientContainer');
+            const sendEmailBtn = document.getElementById('sendEmail');
+            const saveTemplateBtn = document.getElementById('saveTemplate');
+            const loadTemplateBtn = document.getElementById('loadTemplate');
+            const emailStatus = document.getElementById('emailStatus');
+            
+            // Add recipient
+            addRecipientBtn.addEventListener('click', () => {
+                const recipientRow = document.createElement('div');
+                recipientRow.className = 'recipient-row';
+                recipientRow.innerHTML = `
+                    <input type="email" class="form-control recipient-email" placeholder="Masukkan alamat email penerima">
+                    <button class="btn btn-danger btn-small remove-recipient">🗑️</button>
+                `;
+                recipientContainer.appendChild(recipientRow);
+                
+                // Add event listener to remove button
+                recipientRow.querySelector('.remove-recipient').addEventListener('click', () => {
+                    recipientRow.remove();
+                });
+            });
+            
+            // Remove recipient (for initial row)
+            document.querySelector('.remove-recipient').addEventListener('click', function() {
+                this.closest('.recipient-row').remove();
+            });
+            
+            // Send email
+            sendEmailBtn.addEventListener('click', () => {
+                const senderEmail = document.getElementById('senderEmail').value;
+                const subject = document.getElementById('emailSubject').value;
+                const message = document.getElementById('emailMessage').value;
+                const recipients = Array.from(document.querySelectorAll('.recipient-email'))
+                    .map(input => input.value)
+                    .filter(email => email.trim() !== '');
+                
+                if (!senderEmail || !subject || !message || recipients.length === 0) {
+                    showNotification('Sila isi semua bidang yang diperlukan! ⚠️');
+                    return;
+                }
+                
+                // Show sending status
+                emailStatus.style.display = 'inline-flex';
+                emailStatus.className = 'status-indicator status-process';
+                emailStatus.innerHTML = '🔔 Proses Menghantar Email...';
+                
+                // Simulate sending process
+                setTimeout(() => {
+                    // In a real implementation, this would send the email via a server
+                    // For this demo, we'll just show a success message
+                    emailStatus.className = 'status-indicator status-complete';
+                    emailStatus.innerHTML = '📯 Email Berjaya Dihantar!';
+                    
+                    showNotification(`Email berjaya dihantar kepada ${recipients.length} penerima! 📧`);
+                    
+                    // Reset status after 5 seconds
+                    setTimeout(() => {
+                        emailStatus.style.display = 'none';
+                    }, 5000);
+                }, 2000);
+            });
+            
+            // Save template
+            saveTemplateBtn.addEventListener('click', () => {
+                const subject = document.getElementById('emailSubject').value;
+                const message = document.getElementById('emailMessage').value;
+                
+                if (!subject || !message) {
+                    showNotification('Sila isi tajuk dan mesej sebelum menyimpan template! ⚠️');
+                    return;
+                }
+                
+                const template = {
+                    subject,
+                    message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem('emailTemplate', JSON.stringify(template));
+                showNotification('Template berjaya disimpan! 💾');
+            });
+            
+            // Load template
+            loadTemplateBtn.addEventListener('click', () => {
+                const savedTemplate = localStorage.getItem('emailTemplate');
+                
+                if (!savedTemplate) {
+                    showNotification('Tiada template disimpan! 📭');
+                    return;
+                }
+                
+                const template = JSON.parse(savedTemplate);
+                document.getElementById('emailSubject').value = template.subject;
+                document.getElementById('emailMessage').value = template.message;
+                
+                showNotification('Template berjaya dimuatkan! 📂');
+            });
+        }
+
+        // Setup Janakan IKAP page
+        function setupJanakanPage() {
+            const generateBtn = document.getElementById('generateBtn');
+            const copyAllBtn = document.getElementById('copyAllBtn');
+            const generatedData = document.getElementById('generatedData');
+            const userAliasInput = document.getElementById('userAlias');
+            const generateCountInput = document.getElementById('generateCount');
+            
+            // Generate data
+            generateBtn.addEventListener('click', () => {
+                const userAlias = userAliasInput.value.trim();
+                const count = parseInt(generateCountInput.value) || 1;
+                
+                if (!userAlias) {
+                    showNotification('Sila masukkan nama samaran! 👩‍💻');
+                    return;
+                }
+                
+                // Clear previous data
+                generatedData.innerHTML = '';
+                
+                // Generate new data
+                for (let i = 0; i < count; i++) {
+                    const idCard = generateIDCard();
+                    const kodeUser = generateKodeUser();
+                    const akaunGoogle = `${idCard}@gmail.com`;
+                    const passwordGoogle = kodeUser;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${String(i+1).padStart(2, '0')}</td>
+                        <td>${idCard}</td>
+                        <td>${kodeUser}</td>
+                        <td>${akaunGoogle}</td>
+                        <td>${passwordGoogle}</td>
+                        <td class="action-cell">
+                            <button class="btn btn-danger btn-small delete-row">🗑️</button>
+                            <button class="btn btn-secondary btn-small copy-row" data-id="${idCard}" data-kode="${kodeUser}" data-akaun="${akaunGoogle}" data-password="${passwordGoogle}">📥</button>
+                        </td>
+                    `;
+                    generatedData.appendChild(row);
+                }
+                
+                // Add event listeners to new buttons
+                document.querySelectorAll('.delete-row').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        this.closest('tr').remove();
+                        showNotification('Data berjaya dipadam! 🗑️');
+                    });
+                });
+                
+                document.querySelectorAll('.copy-row').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        const kode = this.getAttribute('data-kode');
+                        const akaun = this.getAttribute('data-akaun');
+                        const password = this.getAttribute('data-password');
+                        
+                        const textToCopy = `ID Card: ${id}\nKode User: ${kode}\nAkaun Google: ${akaun}\nPassword: ${password}`;
+                        
+                        navigator.clipboard.writeText(textToCopy)
+                            .then(() => {
+                                showNotification('Data berjaya disalin! 📋');
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy: ', err);
+                                showNotification('Gagal menyalin data! ❌');
+                            });
+                    });
+                });
+                
+                showNotification(`${count} data berjaya dijanakan! 🎉`);
+                
+                // Save to localStorage
+                saveGeneratedData();
+            });
+            
+            // Copy all data
+            copyAllBtn.addEventListener('click', () => {
+                const rows = document.querySelectorAll('#generatedData tr');
+                if (rows.length === 0) {
+                    showNotification('Tiada data untuk disalin! 📭');
+                    return;
+                }
+                
+                let textToCopy = '';
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    textToCopy += `BIL: ${cells[0].textContent}\n`;
+                    textToCopy += `ID Card: ${cells[1].textContent}\n`;
+                    textToCopy += `Kode User: ${cells[2].textContent}\n`;
+                    textToCopy += `Akaun Google: ${cells[3].textContent}\n`;
+                    textToCopy += `Password: ${cells[4].textContent}\n`;
+                    textToCopy += '------------------------\n';
+                });
+                
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        showNotification('Semua data berjaya disalin! 📋');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                        showNotification('Gagal menyalin data! ❌');
+                    });
+            });
+            
+            // Generate ID Card (3 huruf 5 nombor RRMM 4 nombor)
+            function generateIDCard() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                let result = '';
+                
+                // 3 random letters
+                for (let i = 0; i < 3; i++) {
+                    result += letters.charAt(Math.floor(Math.random() * letters.length));
+                }
+                
+                // 5 random numbers
+                for (let i = 0; i < 5; i++) {
+                    result += Math.floor(Math.random() * 10);
+                }
+                
+                // RRMM
+                result += 'RRMM';
+                
+                // 4 random numbers
+                for (let i = 0; i < 4; i++) {
+                    result += Math.floor(Math.random() * 10);
+                }
+                
+                return result;
+            }
+            
+            // Generate Kode User (3 huruf 5 nombor R)
+            function generateKodeUser() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                let result = '';
+                
+                // 3 random letters
+                for (let i = 0; i < 3; i++) {
+                    result += letters.charAt(Math.floor(Math.random() * letters.length));
+                }
+                
+                // 5 random numbers
+                for (let i = 0; i < 5; i++) {
+                    result += Math.floor(Math.random() * 10);
+                }
+                
+                // R
+                result += 'R';
+                
+                return result;
+            }
+            
+            // Save generated data to localStorage
+            function saveGeneratedData() {
+                const rows = document.querySelectorAll('#generatedData tr');
+                const data = [];
+                
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    data.push({
+                        id: cells[1].textContent,
+                        kode: cells[2].textContent,
+                        akaun: cells[3].textContent,
+                        password: cells[4].textContent
+                    });
+                });
+                
+                localStorage.setItem('generatedIKAP', JSON.stringify(data));
+            }
+        }
+
+        // Setup Analisis Atas Talian page
+        function setupAnalisisPage() {
+            const openAnalyticsBtn = document.getElementById('openAnalytics');
+            
+            openAnalyticsBtn.addEventListener('click', () => {
+                window.open('https://lookerstudio.google.com/u/0/reporting/3a3fc3d5-9905-460f-8aff-ec41f934260a?s=sC8S-2KGHUs', '_blank');
+            });
+        }
+
+        // Setup Help Us / Contact Us page
+        function setupHelpPage() {
+            const contactItems = document.querySelectorAll('#helpPage .contact-item[data-email]');
+            const emailTemplate = document.getElementById('emailTemplate');
+            const sendHelpEmailBtn = document.getElementById('sendHelpEmail');
+            
+            let selectedEmail = '';
+            
+            contactItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    selectedEmail = item.getAttribute('data-email');
+                    emailTemplate.style.display = 'block';
+                    showNotification(`Email sokongan dipilih: ${selectedEmail} 📧`);
+                });
+            });
+            
+            sendHelpEmailBtn.addEventListener('click', () => {
+                const userName = document.getElementById('userName').value;
+                const userPhone = document.getElementById('userPhone').value;
+                const problemDescription = document.getElementById('problemDescription').value;
+                
+                if (!userName || !userPhone || !problemDescription) {
+                    showNotification('Sila isi semua maklumat yang diperlukan! ⚠️');
+                    return;
+                }
+                
+                // Generate report code
+                const reportCode = 'SPIMF-' + Date.now();
+                
+                // Create email content
+                const subject = `SPIMF Help Request - ${reportCode}`;
+                const body = `🗼MESSAGE FROM SPIMF SYSTEMS
+
+👏🏼Halo Salam Sejahtera Pihak Spimf, Saya bernama ${userName} dan ${userPhone} ingin memaklumkan bahawasanya saya memiliki beberapa masalah yang dihadapi semasa menggunakan sistem ini.
+
+Masalah yang dihadapi oleh saya ialah: ${problemDescription}
+
+Kode Laporan: ${reportCode}
+
+🥳Sekian Ribuan T.Ksh, Malaysia Development Spimf`;
+                
+                // Open default email client
+                const mailtoLink = `mailto:${selectedEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailtoLink;
+                
+                showNotification('Mesej bantuan berjaya disediakan! 📧');
+            });
+        }
+
+        // Setup Cadangan Pengubahsuaian page
+        function setupCadanganPage() {
+            const suggestionButtons = document.querySelectorAll('[data-suggestion]');
+            const customSuggestion = document.getElementById('customSuggestion');
+            const sendSuggestionBtn = document.getElementById('sendSuggestion');
+            
+            let selectedSuggestionType = '';
+            
+            suggestionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    selectedSuggestionType = button.getAttribute('data-suggestion');
+                    
+                    if (selectedSuggestionType === 'other') {
+                        customSuggestion.style.display = 'block';
+                    } else {
+                        customSuggestion.style.display = 'none';
+                    }
+                    
+                    showNotification(`Jenis cadangan dipilih: ${button.textContent} 📝`);
+                });
+            });
+            
+            sendSuggestionBtn.addEventListener('click', () => {
+                let suggestionText = '';
+                
+                if (selectedSuggestionType === 'other') {
+                    suggestionText = document.getElementById('suggestionText').value;
+                    if (!suggestionText) {
+                        showNotification('Sila isi cadangan anda! ⚠️');
+                        return;
+                    }
+                } else {
+                    // Use predefined text based on selection
+                    const suggestionTexts = {
+                        'error': 'Saya ingin melaporkan ralat dalam sistem yang perlu dibaiki.',
+                        'update': 'Saya cadangkan untuk mengemaskini data ahli dengan maklumat terkini.',
+                        'system-error': 'Saya mengalami ralat sistem yang menghalang penggunaan normal.'
+                    };
+                    suggestionText = suggestionTexts[selectedSuggestionType] || '';
+                }
+                
+                if (!selectedSuggestionType) {
+                    showNotification('Sila pilih jenis cadangan! ⚠️');
+                    return;
+                }
+                
+                // Create email content
+                const subject = `SPIMF Cadangan Pengubahsuaian - ${selectedSuggestionType.toUpperCase()}`;
+                const body = `Cadangan Pengubahsuaian SPIMF:
+
+Jenis: ${selectedSuggestionType}
+Cadangan: ${suggestionText}
+
+Dihantar melalui Sistem SPIMF pada: ${new Date().toLocaleString('ms-MY')}`;
+                
+                // Open default email client
+                const mailtoLink = `mailto:pfareezonzz01@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailtoLink;
+                
+                showNotification('Cadangan berjaya disediakan untuk dihantar! 📧');
+            });
+        }
+
+        // Setup backup controls
+        function setupBackupControls() {
+            const backupBtn = document.getElementById('backupBtn');
+            const importBtn = document.getElementById('importBtn');
+            const autoBackupBtn = document.getElementById('autoBackupBtn');
+            const storageBtn = document.getElementById('storageBtn');
+            const autoLockBtn = document.getElementById('autoLockBtn');
+            
+            let autoBackupEnabled = false;
+            
+            backupBtn.addEventListener('click', () => {
+                // Collect all data to backup
+                const backupData = {
+                    emailTemplate: localStorage.getItem('emailTemplate'),
+                    generatedIKAP: localStorage.getItem('generatedIKAP'),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Create and download backup file
+                const dataStr = JSON.stringify(backupData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `spimf-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Backup semua data berjaya! 💾');
+            });
+            
+            importBtn.addEventListener('click', () => {
+                // Create file input element
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.json';
+                
+                fileInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const backupData = JSON.parse(e.target.result);
+                            
+                            // Restore data
+                            if (backupData.emailTemplate) {
+                                localStorage.setItem('emailTemplate', backupData.emailTemplate);
+                            }
+                            
+                            if (backupData.generatedIKAP) {
+                                localStorage.setItem('generatedIKAP', backupData.generatedIKAP);
+                                // Also regenerate the table if we're on the Janakan page
+                                if (document.getElementById('janakanPage').classList.contains('active')) {
+                                    loadGeneratedData();
+                                }
+                            }
+                            
+                            showNotification('Data berjaya dipulihkan dari backup! 📂');
+                        } catch (error) {
+                            console.error('Error parsing backup file:', error);
+                            showNotification('Ralat memulihkan backup! ❌');
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+                
+                fileInput.click();
+            });
+            
+            autoBackupBtn.addEventListener('click', () => {
+                autoBackupEnabled = !autoBackupEnabled;
+                autoBackupBtn.textContent = autoBackupEnabled ? 
+                    '⌛ Backup Auto: AKTIF' : '⌛ Backup Auto Setiap Perubahan';
+                autoBackupBtn.style.background = autoBackupEnabled ? 
+                    'var(--secondary-color)' : '';
+                
+                if (autoBackupEnabled) {
+                    showNotification('Backup auto diaktifkan! 🔄');
+                } else {
+                    showNotification('Backup auto dinyahaktifkan! ⏹️');
+                }
+            });
+            
+            storageBtn.addEventListener('click', () => {
+                // This would typically save to browser storage
+                // For this demo, we'll just show a notification
+                showNotification('Data disimpan dalam storan penyemak imbas! 🗄️');
+            });
+            
+            autoLockBtn.addEventListener('click', () => {
+                showNotification('Sistem akan dikunci secara automatik mengikut jadual! ⏲️');
+            });
+        }
+
+        // Load saved data
+        function loadSavedData() {
+            // Load generated IKAP data if exists
+            loadGeneratedData();
+        }
+
+        // Load generated IKAP data from localStorage
+        function loadGeneratedData() {
+            const savedData = localStorage.getItem('generatedIKAP');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const generatedData = document.getElementById('generatedData');
+                
+                generatedData.innerHTML = '';
+                
+                data.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${String(index+1).padStart(2, '0')}</td>
+                        <td>${item.id}</td>
+                        <td>${item.kode}</td>
+                        <td>${item.akaun}</td>
+                        <td>${item.password}</td>
+                        <td class="action-cell">
+                            <button class="btn btn-danger btn-small delete-row">🗑️</button>
+                            <button class="btn btn-secondary btn-small copy-row" data-id="${item.id}" data-kode="${item.kode}" data-akaun="${item.akaun}" data-password="${item.password}">📥</button>
+                        </td>
+                    `;
+                    generatedData.appendChild(row);
+                });
+                
+                // Add event listeners to new buttons
+                document.querySelectorAll('.delete-row').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        this.closest('tr').remove();
+                        saveGeneratedData();
+                        showNotification('Data berjaya dipadam! 🗑️');
+                    });
+                });
+                
+                document.querySelectorAll('.copy-row').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        const kode = this.getAttribute('data-kode');
+                        const akaun = this.getAttribute('data-akaun');
+                        const password = this.getAttribute('data-password');
+                        
+                        const textToCopy = `ID Card: ${id}\nKode User: ${kode}\nAkaun Google: ${akaun}\nPassword: ${password}`;
+                        
+                        navigator.clipboard.writeText(textToCopy)
+                            .then(() => {
+                                showNotification('Data berjaya disalin! 📋');
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy: ', err);
+                                showNotification('Gagal menyalin data! ❌');
+                            });
+                    });
+                });
+            }
+        }
+
+        // Save generated data to localStorage
+        function saveGeneratedData() {
+            const rows = document.querySelectorAll('#generatedData tr');
+            const data = [];
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                data.push({
+                    id: cells[1].textContent,
+                    kode: cells[2].textContent,
+                    akaun: cells[3].textContent,
+                    password: cells[4].textContent
+                });
+            });
+            
+            localStorage.setItem('generatedIKAP', JSON.stringify(data));
+        }
+    </script>
+</body>
+</html>
