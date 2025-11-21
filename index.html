@@ -1177,15 +1177,13 @@
 
     <!-- Lock Screen -->
     <div class="lock-screen" id="lockScreen" style="display: none;">
-        <h2>🔒 Sistem Dikunci</h2>
-        <p>Sistem SPIMF kini ditutup dan tidak boleh diakses.</p>
-        <p>Sila kembali pada waktu operasi yang ditetapkan:</p>
-        <p>⏰ 6:00 pagi - 12:00 pagi</p>
-        <p>⏰ 12:00 petang - 6:00 petang</p>
-        <p>⏰ 6:00 malam - 12:00 malam</p>
-        <div class="countdown" id="countdownTimer">Mengira...</div>
-        <p>Sistem akan dibuka semula dalam:</p>
-    </div>
+    <h2>🔒 Sistem Dikunci</h2>
+    <p>Sistem SPIMF kini ditutup dan tidak boleh diakses.</p>
+    <p>Sila kembali pada waktu operasi yang ditetapkan:</p>
+    <p>⏰ 6:00 pagi - 12:00 malam</p>
+    <div class="countdown" id="countdownTimer">Mengira...</div>
+    <p>Sistem akan dibuka semula dalam:</p>
+</div>
 
     <!-- System Block Screen -->
     <div class="lock-screen" id="systemBlockScreen" style="display: none;">
@@ -1496,70 +1494,65 @@
 
         // Check if system should be locked based on time
         function checkSystemLock() {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // Convert to minutes since midnight for easier comparison
+    const currentTime = currentHour * 60 + currentMinute;
+    
+    // Define allowed time slots in minutes since midnight
+    // UPDATED: 6:00 AM to 12:00 AM (18 hours continuous)
+    const allowedSlots = [
+        { start: 6 * 60, end: 24 * 60 }    // 6:00 - 24:00 (6AM to 12AM)
+    ];
+    
+    let isAllowed = false;
+    for (const slot of allowedSlots) {
+        if (currentTime >= slot.start && currentTime < slot.end) {
+            isAllowed = true;
+            break;
+        }
+    }
+    
+    if (!isAllowed) {
+        // Calculate next available time (6:00 AM next day)
+        let nextAvailable = allowedSlots[0].start;
+        if (currentTime >= 0 && currentTime < 6 * 60) {
+            // Before 6 AM, next available is today's 6 AM
+            nextAvailable = allowedSlots[0].start;
+        } else {
+            // After midnight, next available is tomorrow's 6 AM
+            nextAvailable = allowedSlots[0].start + 24 * 60;
+        }
+        
+        // Calculate time until next available slot
+        const timeUntilAvailable = nextAvailable - currentTime;
+        const hours = Math.floor(timeUntilAvailable / 60);
+        const minutes = timeUntilAvailable % 60;
+        
+        // Show lock screen
+        lockScreen.style.display = 'flex';
+        countdownTimer.textContent = `${hours} jam ${minutes} minit`;
+        
+        // Update countdown every minute
+        setInterval(() => {
             const now = new Date();
             const currentHour = now.getHours();
             const currentMinute = now.getMinutes();
-            
-            // Convert to minutes since midnight for easier comparison
             const currentTime = currentHour * 60 + currentMinute;
             
-            // Define allowed time slots in minutes since midnight
-            const allowedSlots = [
-                { start: 6 * 01, end: 12* 60 },    // 6:01 - 12:00
-                { start: 12 * 01, end: 6 * 60 },   // 12:01 - 6:00
-                { start: 6 * 01, end: 12 * 60 }    // 6:01 - 12:00
-            ];
-            
-            let isAllowed = false;
-            for (const slot of allowedSlots) {
-                if (currentTime >= slot.start && currentTime < slot.end) {
-                    isAllowed = true;
-                    break;
-                }
-            }
-            
-            if (!isAllowed) {
-                // Calculate next available time
-                let nextAvailable = null;
-                for (const slot of allowedSlots) {
-                    if (currentTime < slot.start) {
-                        nextAvailable = slot.start;
-                        break;
-                    }
-                }
-                
-                // If no slot found today, use first slot tomorrow
-                if (!nextAvailable) {
-                    nextAvailable = allowedSlots[0].start + 24 * 60; // Add 24 hours
-                }
-                
-                // Calculate time until next available slot
-                const timeUntilAvailable = nextAvailable - currentTime;
+            const timeUntilAvailable = nextAvailable - currentTime;
+            if (timeUntilAvailable <= 0) {
+                location.reload(); // Reload page when system should be available
+            } else {
                 const hours = Math.floor(timeUntilAvailable / 60);
                 const minutes = timeUntilAvailable % 60;
-                
-                // Show lock screen
-                lockScreen.style.display = 'flex';
                 countdownTimer.textContent = `${hours} jam ${minutes} minit`;
-                
-                // Update countdown every minute
-                setInterval(() => {
-                    const now = new Date();
-                    const currentHour = now.getHours();
-                    const currentMinute = now.getMinutes();
-                    const currentTime = currentHour * 60 + currentMinute;
-                    
-                    const timeUntilAvailable = nextAvailable - currentTime;
-                    if (timeUntilAvailable <= 0) {
-                        location.reload(); // Reload page when system should be available
-                    } else {
-                        const hours = Math.floor(timeUntilAvailable / 60);
-                        const minutes = timeUntilAvailable % 60;
-                        countdownTimer.textContent = `${hours} jam ${minutes} minit`;
-                    }
-                }, 60000);
             }
-        }
+        }, 60000);
+    }
+}
 
         // Show a specific page
         function showPage(pageId) {
