@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPIMF ADMIN - Sistem Pengurusan Admin</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #34a853;
+            --accent-color: #fbbc05;
+            --danger-color: #ea4335;
+            --admin-color: #8e44ad;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: var(--light-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .admin-badge {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: var(--admin-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Loading Screen untuk Admin */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .admin-radar {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .admin-radar .radar {
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--admin-color);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-radar .radar::before {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(142, 68, 173, 0.6), transparent);
+            animation: radar-sweep 1.5s linear infinite;
+        }
+
+        .admin-welcome {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-welcome h1 {
+            font-size: 28px;
+            color: var(--admin-color);
+            margin-bottom: 10px;
+        }
+
+        .admin-welcome p {
+            color: var(--accent-color);
+            font-size: 16px;
+        }
+
+        .admin-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .admin-feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--admin-color);
+        }
+
+        .admin-feature h3 {
+            color: var(--admin-color);
+            margin-bottom: 10px;
+        }
+
+        /* Main Content - SAMA seperti sistem utama tapi TANPA time lock */
+        .main-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--admin-color);
+        }
+
+        .date-time {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            color: var(--admin-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .admin-control-panel {
+            background: rgba(142, 68, 173, 0.1);
+            border: 2px solid var(--admin-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .admin-control-panel h2 {
+            color: var(--admin-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: var(--admin-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-success {
+            background: var(--secondary-color);
+        }
+
+        /* Styles lain sama seperti sistem utama... */
+        /* Saya akan include semua styles dari sistem utama di sini */
+        /* Tapi untuk jimat space, saya tak repeat semua CSS */
+
+    </style>
+</head>
+<body>
+    <div class="admin-badge">🛡️ MOD ADMIN</div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="admin-radar">
+            <div class="radar">
+                <div class="radar-center"></div>
+            </div>
+        </div>
+        
+        <div class="admin-welcome">
+            <h1>🛡️ SISTEM ADMIN SPIMF</h1>
+            <p>Akses 24/7 - Kawalan Penuh</p>
+        </div>
+
+        <div class="admin-features">
+            <div class="admin-feature">
+                <h3>🚀 Akses 24/7</h3>
+                <p>Sistem sentiasa boleh diakses tanpa sekatan waktu</p>
+            </div>
+            <div class="admin-feature">
+                <h3>🛡️ Kawalan Penuh</h3>
+                <p>Block/unblock sistem, lihat statistik, urus ahli</p>
+            </div>
+            <div class="admin-feature">
+                <h3>📊 Dashboard Lanjutan</h3>
+                <p>Analisis terperinci dan laporan sistem</p>
+            </div>
+        </div>
+
+        <button class="control-btn btn-success" id="enterAdminBtn">
+            🚀 MASUK SISTEM ADMIN
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1>🛡️ Admin SPIMF - Kawalan Penuh</h1>
+            <div class="date-time" id="dateTime">
+                Loading date and time...
+            </div>
+        </div>
+
+        <!-- Admin Control Panel -->
+        <div class="admin-control-panel">
+            <h2>🎛️ KAWALAN SISTEM</h2>
+            <div class="control-buttons">
+                <button class="control-btn" id="blockSystemBtn">🚫 BLOCK SISTEM UTAMA</button>
+                <button class="control-btn btn-success" id="unblockSystemBtn">✅ BUKA SISTEM UTAMA</button>
+                <button class="control-btn" id="viewStatsBtn">📊 LIHAT STATISTIK</button>
+                <button class="control-btn" id="backupSystemBtn">💾 BACKUP FULL SYSTEM</button>
+            </div>
+            
+            <div class="system-status">
+                <h3>Status Sistem Utama: <span id="mainSystemStatus" style="color: var(--secondary-color);">AKTIF</span></h3>
+                <p>Terakhir dikemas kini: <span id="lastUpdate">-</span></p>
+            </div>
+        </div>
+
+        <!-- Content dari sistem utama -->
+        <!-- Copy semua content dari index.html main content di sini -->
+        <!-- Tapi TANPA time lock checking -->
+
+    </div>
+
+    <script>
+        // ADMIN SYSTEM - NO TIME LOCK
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContent = document.getElementById('mainContent');
+            const enterAdminBtn = document.getElementById('enterAdminBtn');
+            const dateTimeElement = document.getElementById('dateTime');
+
+            // Update date and time
+            function updateDateTime() {
+                const now = new Date();
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                };
+                dateTimeElement.textContent = now.toLocaleDateString('ms-MY', options);
+            }
+
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            // Enter admin system
+            enterAdminBtn.addEventListener('click', function() {
+                loadingScreen.classList.add('hidden');
+                mainContent.classList.add('active');
+                
+                // Show admin notification
+                showNotification('Selamat datang ke Sistem Admin SPIMF! 🛡️');
+            });
+
+            // Admin control functions
+            document.getElementById('blockSystemBtn').addEventListener('click', function() {
+                // Block main system
+                localStorage.setItem('spimf_system_status', 'blocked');
+                localStorage.setItem('spimf_block_reason', 'Diblock oleh Admin');
+                localStorage.setItem('spimf_block_time', new Date().toISOString());
+                
+                document.getElementById('mainSystemStatus').textContent = 'DI BLOCK';
+                document.getElementById('mainSystemStatus').style.color = 'var(--danger-color)';
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ms-MY');
+                
+                showNotification('Sistem utama berjaya di-block! 🚫');
+            });
+
+            document.getElementById('unblockSystemBtn').addEventListener('click', function() {
+                // Unblock main system
+                localStorage.setItem('spimf_system_status', 'active');
+                localStorage.setItem('spimf_block_reason', '');
+                
+                document.getElementById('mainSystemStatus').textContent = 'AKTIF';
+                document.getElementById('mainSystemStatus').style.color = 'var(--secondary-color)';
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ms-MY');
+                
+                showNotification('Sistem utama berjaya dibuka! ✅');
+            });
+
+            // Load system status
+            const systemStatus = localStorage.getItem('spimf_system_status') || 'active';
+            if (systemStatus === 'blocked') {
+                document.getElementById('mainSystemStatus').textContent = 'DI BLOCK';
+                document.getElementById('mainSystemStatus').style.color = 'var(--danger-color)';
+            }
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ms-MY');
+
+            // Notification function
+            function showNotification(message) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--admin-color);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: var(--border-radius);
+                    box-shadow: var(--box-shadow);
+                    z-index: 1000;
+                    transform: translateX(150%);
+                    transition: transform 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // Show notification
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(150%)';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 5000);
+            }
+
+            // Copy semua JavaScript dari sistem utama di sini
+            // TAPI BUANG fungsi checkSystemLock() dan time restriction
+        });
+    </script>
+</body>
+</html>
