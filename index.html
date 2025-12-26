@@ -1,0 +1,629 @@
+<!-- index.html — SPIMF | Sistem Pengurusan Identiti Membership FareezOnzz -->
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPIMF</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --secondary: #f59e0b;
+      --light: #fff;
+      --dark: #111;
+      --success: #10b981;
+      --danger: #ef4444;
+      --admin-primary: #ec4899;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:Segoe UI, sans-serif; }
+    body { background:#f8fafc; padding:20px; }
+    .container { max-width:900px; margin:auto; background:#fff; border-radius:12px; padding:25px; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+    h1 { color:var(--primary); text-align:center; margin-bottom:20px; }
+    .logo { font-size:28px; font-weight:bold; color:var(--primary); }
+    .admin-mode { --primary: var(--admin-primary); }
+    .countdown { text-align:center; margin-top:15px; font-weight:bold; }
+    .danger { color:var(--danger); }
+    button {
+      background:var(--primary); color:white; border:none; padding:10px 15px;
+      border-radius:6px; margin:5px; cursor:pointer; font-weight:bold;
+    }
+    .admin-btn { background:var(--admin-primary); }
+    .guest-btn { background:#64748b; }
+    input, select, textarea {
+      width:100%; padding:10px; margin:6px 0; border:1px solid #ddd; border-radius:6px;
+    }
+    .section { margin:20px 0; padding:15px; border-left:4px solid var(--secondary); background:#f9fafb; }
+    .editable-field { display:flex; align-items:center; gap:10px; }
+    .copy-btn { background:#64748b; padding:5px 10px; font-size:12px; }
+    table { width:100%; border-collapse:collapse; margin:15px 0; }
+    th, td { padding:10px; text-align:left; border:1px solid #e2e8f0; }
+    th { background:#f1f5f9; }
+    .hidden { display:none; }
+    .notice { background:#dcfce7; color:#166534; padding:12px; border-radius:6px; margin:15px 0; }
+    .scroll-table { overflow-x:auto; max-width:100%; }
+  </style>
+</head>
+<body>
+  <div id="system-lock" class="hidden" style="position:fixed;inset:0;background:#000;z-index:1000;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;">
+    <h2>🔒 Sistem Tidak Aktif</h2>
+    <p>Masukkan kata laluan operasi:</p>
+    <input type="password" id="sys-pass" placeholder="SPIMFONWER" />
+    <button onclick="unlockSystem()">Buka Sistem</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login-screen" class="container">
+    <h1 class="logo">SPIMF</h1>
+    <p>Sistem Pengurusan Identiti Membership FareezOnzz</p>
+    <div style="text-align:center; margin:20px 0;">
+      <div id="stats-display" style="color:green; font-weight:bold;"></div>
+      <div id="system-countdown" class="countdown"></div>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:20px 0;">
+      <button onclick="showLogin('phone')">📞 Telefon</button>
+      <button onclick="showLogin('idcard')">🆔 ID</button>
+      <button onclick="showLogin('kode')">🔑 Kode</button>
+      <button onclick="showLogin('account')">📧 Akaun</button>
+      <button onclick="showLogin('find')">🔍 Cari Nama</button>
+      <button onclick="showLogin('admin')" class="admin-btn">👑 Admin</button>
+      <button onclick="enterGuestMode()" class="guest-btn">👥 Guest</button>
+    </div>
+    <div id="login-forms"></div>
+  </div>
+
+  <!-- DASHBOARD MEMBERSHIP -->
+  <div id="membership-dashboard" class="hidden container">
+    <h2 class="logo">SPIMF - Membership Dashboard</h2>
+    <div id="member-welcome" class="notice"></div>
+    <div id="admin-message" class="notice" style="display:none;"></div>
+
+    <!-- Profile -->
+    <div class="section">
+      <h3>Profil Anda</h3>
+      <img id="profile-img" src="" alt="Profile" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
+      <div class="editable-field">
+        <input type="text" id="profile-link" placeholder="Google Drive Link" />
+        <button onclick="saveProfileLink()">Simpan</button>
+      </div>
+      <p><strong>Pangkat:</strong> <span id="current-rank"></span></p>
+      <p><strong>Penyumbangan:</strong> <span id="contribution"></span></p>
+      <p><strong>BAKDF Status:</strong> <span id="bakdf-status"></span></p>
+      <p><strong>BAKDF Ulasan:</strong> <span id="bakdf-review"></span></p>
+    </div>
+
+    <!-- Main Info -->
+    <div class="section" style="border-left-color:#000;">
+      <h3>Maklumat Utama (Boleh Edit)</h3>
+      <div id="main-info-fields"></div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="section" style="border-left-color:red;">
+      <h3>Sosial Media (Boleh Edit)</h3>
+      <div id="social-fields"></div>
+    </div>
+
+    <!-- Questions -->
+    <div class="section" style="border-left-color:#84cc16;">
+      <h3>Soalan Tentang Anda (Boleh Edit)</h3>
+      <div id="question-fields"></div>
+    </div>
+
+    <!-- Additional -->
+    <div class="section" style="border-left-color:#22c55e;">
+      <h3>Maklumat Tambahan</h3>
+      <div id="additional-info"></div>
+    </div>
+
+    <!-- System Settings -->
+    <div class="section">
+      <h3>🧾 Tetapan Sistem</h3>
+      <p>Status Akaun: <span id="account-status"></span></p>
+      <button onclick="stopAccount()">Hentikan Akaun</button>
+      <button onclick="logout()">Log Keluar</button>
+      <p><strong>Hubungi Sokongan:</strong><br>
+        pfareezonzz01@gmail.com<br>
+        developerfareezonzz@gmail.com<br>
+        [Nombor Data: <span id="row-number"></span>]
+      </p>
+      <textarea id="feedback" placeholder="Hantar maklum balas..." style="height:80px;"></textarea>
+      <button onclick="sendFeedback()">Hantar</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD ADMIN -->
+  <div id="admin-dashboard" class="hidden container admin-mode">
+    <h2 class="logo">SPIMF - Admin Dashboard</h2>
+    <div id="admin-welcome" class="notice"></div>
+    <div id="spimf-notice" class="notice" style="display:none;"></div>
+    <div id="admin-notice" class="notice" style="display:none;"></div>
+
+    <!-- Admin Profile -->
+    <div class="section">
+      <h3>Profil Admin</h3>
+      <img id="admin-profile-img" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
+      <div class="editable-field">
+        <input type="text" id="admin-profile-link" placeholder="Google Drive Link" />
+        <button onclick="saveAdminProfileLink()">Simpan</button>
+      </div>
+      <div id="admin-highlights"></div>
+    </div>
+
+    <!-- Admin Info (Editable) -->
+    <div class="section" style="border-left-color:var(--admin-primary);">
+      <h3>Maklumat Admin (Boleh Edit)</h3>
+      <div id="admin-editable-fields"></div>
+    </div>
+
+    <!-- MEMBERSHIP TABLE -->
+    <div class="section">
+      <h3>Data Ahli</h3>
+      <div class="scroll-table">
+        <table id="membership-table">
+          <thead><tr><th>BIL</th><th>Nama</th><th>Pangkat</th><th>No. Telefon</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN TABLE -->
+    <div class="section">
+      <h3>Jawatankuasa Admin</h3>
+      <div class="scroll-table">
+        <table id="admin-table">
+          <thead><tr><th>BIL</th><th>Nama</th><th>Pangkat</th><th>Markah</th><th>Tarikh Jawatankuasa</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <button onclick="adminLogout()">Log Keluar</button>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    // === CONFIG ===
+    const SCRIPT_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXX/exec'; // GANTIKAN
+    const SYSTEM_PASSWORD = 'SPIMFONWER';
+    let currentUser = null;
+    let currentRow = null;
+    let userRole = null;
+
+    // === UTILS ===
+    function callAppScript(action, params = {}, method = 'GET') {
+      const url = new URL(SCRIPT_URL);
+      url.searchParams.set('action', action);
+      for (const k in params) url.searchParams.set(k, params[k]);
+      return fetch(url.toString(), {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: method === 'POST' ? JSON.stringify(params) : null
+      }).then(r => r.json());
+    }
+
+    function unlockSystem() {
+      if (document.getElementById('sys-pass').value === SYSTEM_PASSWORD) {
+        document.getElementById('system-lock').classList.add('hidden');
+        localStorage.setItem('spimf_unlocked_until', new Date(Date.now() + 24*60*60*1000).toISOString());
+        checkSystemTime();
+      } else {
+        alert('Kata laluan salah.');
+      }
+    }
+
+    function checkSystemTime() {
+      const now = new Date();
+      const ms = now.getTime();
+      const tz = 'Asia/Kuala_Lumpur';
+      const kl = new Date(ms + (now.getTimezoneOffset() + 480) * 60000);
+      const hour = kl.getHours();
+      const minute = kl.getMinutes();
+      const totalMinutes = hour * 60 + minute;
+
+      const activeStart = 6 * 60; // 6:00 AM
+      const activeEnd = (2 + 24) * 60 + 45; // 2:45 AM next day
+
+      const isActive = totalMinutes >= activeStart || totalMinutes <= (2*60 + 45);
+      const unlockExpiry = localStorage.getItem('spimf_unlocked_until');
+      const isUnlocked = unlockExpiry && new Date(unlockExpiry) > new Date();
+
+      if (!isActive && !isUnlocked) {
+        document.getElementById('system-lock').classList.remove('hidden');
+      } else {
+        document.getElementById('system-lock').classList.add('hidden');
+        updateCountdown(kl, totalMinutes);
+      }
+    }
+
+    function updateCountdown(kl, totalMinutes) {
+      const activeEnd = (2 + 24) * 60 + 45; // 2:45 AM
+      let minutesUntilClose;
+      if (totalMinutes <= (2*60 + 45)) {
+        minutesUntilClose = (2*60 + 45) - totalMinutes;
+      } else {
+        minutesUntilClose = (24*60 - totalMinutes) + (2*60 + 45);
+      }
+
+      const cdEl = document.getElementById('system-countdown');
+      if (minutesUntilClose <= 5) {
+        cdEl.innerHTML = `⚠️ Sistem akan ditutup dalam <span class="danger">${minutesUntilClose} minit</span>`;
+      } else {
+        cdEl.textContent = `🕒 Sistem aktif sehingga 2:45 pagi`;
+      }
+    }
+
+    function updateStats() {
+      callAppScript('getStats').then(r => {
+        if (r.success) {
+          document.getElementById('stats-display').innerHTML = 
+            `Ahli: ${r.membershipCount} | Admin: ${r.adminCount} | Premium: ${r.premiumCount}`;
+        }
+      });
+    }
+
+    // === LOGIN ===
+    function showLogin(type) {
+      let html = '';
+      if (type === 'phone') {
+        html = `<input type="text" id="login-phone" placeholder="Nombor Telefon" />
+                <button onclick="doLogin('membership', {phone: document.getElementById('login-phone').value})">Log Masuk</button>`;
+      } else if (type === 'idcard') {
+        html = `<input type="text" id="login-id" placeholder="ID Pendaftaran" />
+                <button onclick="doLogin('membership', {idCard: document.getElementById('login-id').value})">Log Masuk</button>`;
+      } else if (type === 'kode') {
+        html = `<input type="text" id="login-kode" placeholder="Kode User" />
+                <button onclick="doLogin('membership', {kodeUser: document.getElementById('login-kode').value})">Log Masuk</button>`;
+      } else if (type === 'account') {
+        html = `<input type="text" id="login-acc" placeholder="Akaun" />
+                <input type="password" id="login-pass" placeholder="Kata Laluan" />
+                <button onclick="doLogin('membership', {account: document.getElementById('login-acc').value, password: document.getElementById('login-pass').value})">Log Masuk</button>`;
+      } else if (type === 'find') {
+        html = `<input type="text" id="login-name" placeholder="Nama Penuh" />
+                <button onclick="searchAccount()">Cari Akaun</button>`;
+      } else if (type === 'admin') {
+        html = `<input type="text" id="admin-user" placeholder="Username" />
+                <input type="password" id="admin-pass" placeholder="Kata Laluan" />
+                <button onclick="doLogin('admin', {username: document.getElementById('admin-user').value, password: document.getElementById('admin-pass').value})">Log Masuk Admin</button>`;
+      }
+      document.getElementById('login-forms').innerHTML = html;
+    }
+
+    function doLogin(sheetType, creds) {
+      callAppScript('login', { sheetType, ...creds }, 'POST').then(r => {
+        if (r.success) {
+          currentUser = r.user;
+          currentRow = r.row;
+          userRole = sheetType;
+          if (sheetType === 'membership') {
+            loadMembershipDashboard();
+          } else {
+            loadAdminDashboard();
+          }
+        } else {
+          alert('Ralat: ' + (r.error || 'Log masuk gagal'));
+        }
+      });
+    }
+
+    function enterGuestMode() {
+      alert('Mod Tetamu: Sila hubungi sokongan untuk bantuan lanjut.');
+    }
+
+    function searchAccount() {
+      const name = document.getElementById('login-name').value;
+      callAppScript('searchByName', { name }).then(r => {
+        if (r.success && r.results.length > 0) {
+          let list = '<h4>Hasil Carian:</h4><ul>';
+          r.results.forEach((res, i) => {
+            list += `<li>${res[6]} — Telefon: ${res[9]} <button onclick="confirmSearchLogin(${i})">Pilih</button></li>`;
+          });
+          list += '</ul>';
+          document.getElementById('login-forms').innerHTML += list;
+          window.searchResults = r.results;
+        } else {
+          alert('Tiada akaun dijumpai.');
+        }
+      });
+    }
+
+    function confirmSearchLogin(idx) {
+      const res = window.searchResults[idx];
+      doLogin('membership', { phone: res[9] });
+    }
+
+    // === DASHBOARD ===
+    function loadMembershipDashboard() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('membership-dashboard').classList.remove('hidden');
+
+      document.getElementById('member-welcome').textContent = `🗳️ Hai, ${currentUser[6]}! Selamat kembali di SPIMF.`;
+      document.getElementById('profile-img').src = currentUser[5] || 'https://via.placeholder.com/100?text=No+Photo';
+      document.getElementById('profile-link').value = currentUser[5] || '';
+      document.getElementById('current-rank').textContent = currentUser[34] || '';
+      document.getElementById('contribution').textContent = currentUser[35] || '';
+      document.getElementById('bakdf-status').textContent = currentUser[38] || '';
+      document.getElementById('bakdf-review').textContent = currentUser[39] || '';
+      document.getElementById('account-status').textContent = currentUser[32] || '';
+      document.getElementById('row-number').textContent = currentRow;
+
+      // Main Info Fields
+      const mainFields = [
+        { label: 'Nama', col: 6, type: 'text' },
+        { label: 'Umur', col: 7, type: 'number' },
+        { label: 'Tarikh Lahir', col: 8, type: 'text' },
+        { label: 'Jantina', col: 10, type: 'select', options: ['Lelaki','Perempuan'] },
+        { label: 'Agama', col: 11, type: 'text' },
+        { label: 'Negara', col: 12, type: 'text' },
+        { label: 'Negeri/Daerah', col: 13, type: 'text' },
+        { label: 'Telefon', col: 9, type: 'text' },
+        { label: 'Kidal?', col: 23, type: 'select', options: ['Ya','Tidak'] },
+        { label: 'Impian Kerjaya', col: 25, type: 'text' },
+        { label: 'Email', col: 1, type: 'text' }
+      ];
+      renderEditableFields('main-info-fields', mainFields, currentUser, 2);
+
+      // Social Media
+      const hasSocial = currentUser[18] === 'Ada';
+      document.getElementById('social-fields').innerHTML = `
+        <label><input type="radio" name="hasSocial" value="Ada" ${hasSocial?'checked':''} onchange="toggleSocialFields(true)"> Ada</label>
+        <label><input type="radio" name="hasSocial" value="Tiada" ${!hasSocial?'checked':''} onchange="toggleSocialFields(false)"> Tiada</label>
+        <div id="social-detail" style="${hasSocial?'':'display:none'}">
+          <input placeholder="TikTok" value="${currentUser[19] || ''}" id="sm-tt" />
+          <input placeholder="Instagram" value="${currentUser[20] || ''}" id="sm-ig" />
+          <input placeholder="YouTube" value="${currentUser[21] || ''}" id="sm-yt" />
+          <input placeholder="Twitter" value="${currentUser[22] || ''}" id="sm-tw" />
+          <button onclick="saveSocialMedia()">Simpan Sosial</button>
+        </div>
+      `;
+
+      // Questions
+      const qFields = [
+        { label: 'Suka Membaiki?', col: 24, type: 'select', options: ['Ya','Tidak'] },
+        { label: 'Subjek Kegemaran', col: 26, type: 'text' },
+        { label: 'Subjek Sukar', col: 27, type: 'text' }
+      ];
+      renderEditableFields('question-fields', qFields, currentUser, 2);
+
+      // Additional
+      document.getElementById('additional-info').innerHTML = `
+        <p>Anda Mengenali Kami Sebagai: ${currentUser[4] || ''}</p>
+        <p>Tarikh Semasa: ${currentUser[3] || ''}</p>
+        <p>Skor: ${currentUser[2] || ''}</p>
+        <p>ID Pendaftaran: ${currentUser[14] || ''} <button class="copy-btn" onclick="copyText('${currentUser[14] || ''}')">Salin</button></p>
+        <p>Kode User: ${currentUser[15] || ''} <button class="copy-btn" onclick="copyText('${currentUser[15] || ''}')">Salin</button></p>
+        <p>Akaun: ${currentUser[16] || ''} <button class="copy-btn" onclick="copyText('${currentUser[16] || ''}')">Salin</button></p>
+        <p>Kata Laluan: ${currentUser[17] || ''} <button class="copy-btn" onclick="copyText('${currentUser[17] || ''}')">Salin</button></p>
+      `;
+
+      // Auto-refresh admin message
+      loadAdminMessage();
+      setInterval(loadAdminMessage, 10000);
+    }
+
+    function loadAdminMessage() {
+      const msg = currentUser[33] || '';
+      const el = document.getElementById('admin-message');
+      if (msg) {
+        el.style.display = 'block';
+        el.innerHTML = `📢 Mesej Admin: ${msg} <button onclick="this.parentElement.style.display='none'">✕</button>`;
+      }
+    }
+
+    function renderEditableFields(containerId, fields, data, sheetTypeInt) {
+      let html = '';
+      fields.forEach(f => {
+        const val = data[f.col] || '';
+        if (f.type === 'select') {
+          html += `<div class="editable-field"><label>${f.label}:</label>
+            <select id="edit-${f.col}">${f.options.map(o => `<option ${val===o?'selected':''}>${o}</option>`).join('')}</select>
+            <button onclick="saveField(${f.col}, ${sheetTypeInt})">Simpan</button></div>`;
+        } else {
+          html += `<div class="editable-field"><label>${f.label}:</label>
+            <input type="${f.type}" id="edit-${f.col}" value="${val}" />
+            <button onclick="saveField(${f.col}, ${sheetTypeInt})">Simpan</button></div>`;
+        }
+      });
+      document.getElementById(containerId).innerHTML = html;
+    }
+
+    function saveField(col, sheetTypeInt) {
+      const val = document.getElementById(`edit-${col}`).value;
+      const sheetType = sheetTypeInt === 2 ? 'membership' : 'admin';
+      callAppScript('updateCell', { sheetType, row: currentRow, columnIndex: col, value: val }, 'POST').then(r => {
+        if (r.success) alert('Berjaya dikemaskini!');
+      });
+    }
+
+    function saveProfileLink() {
+      const link = document.getElementById('profile-link').value;
+      callAppScript('updateCell', { sheetType: 'membership', row: currentRow, columnIndex: 5, value: link }, 'POST').then(r => {
+        if (r.success) {
+          document.getElementById('profile-img').src = link;
+          alert('Profil dikemaskini.');
+        }
+      });
+    }
+
+    function toggleSocialFields(show) {
+      document.getElementById('social-detail').style.display = show ? 'block' : 'none';
+      callAppScript('updateCell', { sheetType: 'membership', row: currentRow, columnIndex: 18, value: show ? 'Ada' : 'Tiada' }, 'POST');
+    }
+
+    function saveSocialMedia() {
+      const fields = [
+        { id: 'sm-tt', col: 19 },
+        { id: 'sm-ig', col: 20 },
+        { id: 'sm-yt', col: 21 },
+        { id: 'sm-tw', col: 22 }
+      ];
+      fields.forEach(f => {
+        const val = document.getElementById(f.id).value;
+        callAppScript('updateCell', { sheetType: 'membership', row: currentRow, columnIndex: f.col, value: val }, 'POST');
+      });
+      alert('Sosial media dikemaskini.');
+    }
+
+    function stopAccount() {
+      if (confirm('Adakah anda pasti mahu hentikan akaun ini?')) {
+        callAppScript('updateCell', { sheetType: 'membership', row: currentRow, columnIndex: 32, value: '❌TIDAK AKTIF' }, 'POST').then(r => {
+          if (r.success) {
+            alert('Akaun telah dihentikan.');
+            logout();
+          }
+        });
+      }
+    }
+
+    function sendFeedback() {
+      const fb = document.getElementById('feedback').value;
+      callAppScript('updateCell', { sheetType: 'membership', row: currentRow, columnIndex: 36, value: fb }, 'POST').then(r => {
+        if (r.success) alert('Maklum balas dihantar.');
+      });
+    }
+
+    function copyText(txt) {
+      navigator.clipboard.writeText(txt).then(() => alert('Disalin!'));
+    }
+
+    function logout() {
+      currentUser = null;
+      currentRow = null;
+      userRole = null;
+      document.getElementById('membership-dashboard').classList.add('hidden');
+      document.getElementById('admin-dashboard').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    // === ADMIN DASHBOARD ===
+    function loadAdminDashboard() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('admin-dashboard').classList.remove('hidden');
+
+      document.getElementById('admin-welcome').textContent = `🎖️ Hai, ${currentUser[0]}! Selamat kembali di SPIMF.`;
+      document.getElementById('admin-profile-img').src = currentUser[5] || 'https://via.placeholder.com/100?text=Admin';
+      document.getElementById('admin-profile-link').value = currentUser[5] || '';
+
+      document.getElementById('admin-highlights').innerHTML = `
+        <p><strong>Pangkat:</strong> ${currentUser[6]}</p>
+        <p><strong>Penyumbangan:</strong> ${currentUser[15]}</p>
+        <p><strong>Tarikh Jawatankuasa:</strong> ${currentUser[10]}</p>
+        <p><strong>Status:</strong> ${currentUser[7]}</p>
+        <p><strong>Markah:</strong> ${currentUser[12]}</p>
+        <p><strong>Misi:</strong> ${currentUser[13]}</p>
+      `;
+
+      const adminFields = [
+        { label: 'Nama Admin', col: 0, editable: currentUser[20] === '✅BENARKAN' },
+        { label: 'Username', col: 1, editable: currentUser[20] === '✅BENARKAN' },
+        { label: 'Password', col: 2, editable: currentUser[20] === '✅BENARKAN' },
+        { label: 'Telefon', col: 3, editable: currentUser[20] === '✅BENARKAN' },
+        { label: 'Email', col: 4, editable: currentUser[20] === '✅BENARKAN' }
+      ];
+      let html = '';
+      adminFields.forEach(f => {
+        if (f.editable) {
+          html += `<div class="editable-field"><label>${f.label}:</label>
+            <input type="text" id="admin-edit-${f.col}" value="${currentUser[f.col] || ''}" />
+            <button onclick="saveAdminField(${f.col})">Simpan</button></div>`;
+        } else {
+          html += `<p>${f.label}: ${currentUser[f.col] || ''} <em>(Baca Sahaja)</em></p>`;
+        }
+      });
+      document.getElementById('admin-editable-fields').innerHTML = html;
+
+      // Load tables
+      loadMembershipTable();
+      loadAdminCommitteeTable();
+
+      // Notices
+      if (currentUser[14]) {
+        document.getElementById('spimf-notice').style.display = 'block';
+        document.getElementById('spimf-notice').textContent = `📢 SPIMF: ${currentUser[14]}`;
+      }
+      if (currentUser[15]) {
+        document.getElementById('admin-notice').style.display = 'block';
+        document.getElementById('admin-notice').textContent = `📢 Admin: ${currentUser[15]}`;
+      }
+    }
+
+    function saveAdminField(col) {
+      const val = document.getElementById(`admin-edit-${col}`).value;
+      callAppScript('updateCell', { sheetType: 'admin', row: currentRow, columnIndex: col, value: val }, 'POST').then(r => {
+        if (r.success) alert('Dikemaskini.');
+      });
+    }
+
+    function saveAdminProfileLink() {
+      const link = document.getElementById('admin-profile-link').value;
+      callAppScript('updateCell', { sheetType: 'admin', row: currentRow, columnIndex: 5, value: link }, 'POST').then(r => {
+        if (r.success) {
+          document.getElementById('admin-profile-img').src = link;
+          alert('Profil admin dikemaskini.');
+        }
+      });
+    }
+
+    function loadMembershipTable() {
+      callAppScript('fetchSheet', { sheetType: 'membership' }).then(r => {
+        if (r.success) {
+          const tbody = document.querySelector('#membership-table tbody');
+          tbody.innerHTML = '';
+          r.data.forEach((row, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${i+1}</td>
+              <td>${row[6] || ''}</td>
+              <td>${row[34] || ''}</td>
+              <td>${row[9] || ''}</td>
+              <td>${row[32] || ''}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      });
+    }
+
+    function loadAdminCommitteeTable() {
+      callAppScript('fetchSheet', { sheetType: 'admin' }).then(r => {
+        if (r.success) {
+          const tbody = document.querySelector('#admin-table tbody');
+          tbody.innerHTML = '';
+          r.data.forEach((row, i) => {
+            const tr = document.createElement('tr');
+            const committeeDate = row[9] || '';
+            let dateCell = committeeDate;
+            if (committeeDate) {
+              const d = new Date(committeeDate);
+              if (!isNaN(d.getTime())) {
+                const diffTime = d - new Date();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays <= 7) {
+                  dateCell = `<span class="danger">${committeeDate} (${diffDays} hari lagi)</span>`;
+                }
+              }
+            }
+            tr.innerHTML = `
+              <td>${i+1}</td>
+              <td>${row[0] || ''}</td>
+              <td>${row[6] || ''}</td>
+              <td>${row[12] || ''}</td>
+              <td>${dateCell}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      });
+    }
+
+    function adminLogout() {
+      logout();
+    }
+
+    // === INIT ===
+    setInterval(checkSystemTime, 30000);
+    setInterval(updateStats, 15000);
+    checkSystemTime();
+    updateStats();
+  </script>
+</body>
+</html>
