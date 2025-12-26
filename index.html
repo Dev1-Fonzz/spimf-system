@@ -1,49 +1,90 @@
-<!-- index.html — SPIMF | Sistem Pengurusan Identiti Membership FareezOnzz -->
 <!DOCTYPE html>
 <html lang="ms">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SPIMF</title>
+  <title>SPIMF - Sistem Pengurusan Identiti Membership FareezOnzz</title>
   <style>
     :root {
       --primary: #1e3a8a;
       --secondary: #f59e0b;
-      --light: #fff;
-      --dark: #111;
+      --light: #ffffff;
+      --text: #1f2937;
       --success: #10b981;
       --danger: #ef4444;
       --admin-primary: #ec4899;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:Segoe UI, sans-serif; }
-    body { background:#f8fafc; padding:20px; }
-    .container { max-width:900px; margin:auto; background:#fff; border-radius:12px; padding:25px; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
-    h1 { color:var(--primary); text-align:center; margin-bottom:20px; }
-    .logo { font-size:28px; font-weight:bold; color:var(--primary); }
-    .admin-mode { --primary: var(--admin-primary); }
-    .countdown { text-align:center; margin-top:15px; font-weight:bold; }
-    .danger { color:var(--danger); }
-    button {
-      background:var(--primary); color:white; border:none; padding:10px 15px;
-      border-radius:6px; margin:5px; cursor:pointer; font-weight:bold;
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', system-ui, sans-serif; }
+    body {
+      background:#f8fafc;
+      padding:15px;
+      transition: background 0.3s;
     }
+    .admin-mode { --primary: var(--admin-primary); background:#fff0f8 !important; }
+    .container {
+      max-width:900px;
+      margin:auto;
+      background:#fff;
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom:20px;
+    }
+    h1, h2, h3 {
+      color:var(--primary);
+      margin:10px 0;
+    }
+    button {
+      background:var(--primary);
+      color:white;
+      border:none;
+      padding:8px 14px;
+      border-radius:6px;
+      margin:5px;
+      cursor:pointer;
+      font-weight:bold;
+      transition:opacity 0.2s;
+    }
+    button:hover { opacity:0.9; }
     .admin-btn { background:var(--admin-primary); }
     .guest-btn { background:#64748b; }
-    input, select, textarea {
-      width:100%; padding:10px; margin:6px 0; border:1px solid #ddd; border-radius:6px;
+    input, textarea, select {
+      width:100%;
+      padding:8px;
+      margin:5px 0;
+      border:1px solid #ddd;
+      border-radius:6px;
+      font-size:14px;
     }
-    .section { margin:20px 0; padding:15px; border-left:4px solid var(--secondary); background:#f9fafb; }
-    .editable-field { display:flex; align-items:center; gap:10px; }
-    .copy-btn { background:#64748b; padding:5px 10px; font-size:12px; }
-    table { width:100%; border-collapse:collapse; margin:15px 0; }
+    .section {
+      margin:15px 0;
+      padding:12px;
+      border-left:4px solid var(--secondary);
+      background:#f9fafb;
+    }
+    .section.black-white { border-left-color:#000; }
+    .section.red { border-left-color:#ef4444; }
+    .section.yellow-green { border-left-color:#84cc16; }
+    .notice {
+      background:#dcfce7;
+      color:#166534;
+      padding:12px;
+      border-radius:8px;
+      margin:15px 0;
+      position:relative;
+    }
+    .notice button.close { position:absolute; top:8px; right:8px; background:#16a085; font-size:12px; padding:2px 6px; }
+    .countdown { text-align:center; font-weight:bold; margin:10px 0; }
+    .danger { color:var(--danger); }
+    .hidden { display:none; }
+    table { width:100%; border-collapse:collapse; margin:10px 0; }
     th, td { padding:10px; text-align:left; border:1px solid #e2e8f0; }
     th { background:#f1f5f9; }
-    .hidden { display:none; }
-    .notice { background:#dcfce7; color:#166534; padding:12px; border-radius:6px; margin:15px 0; }
-    .scroll-table { overflow-x:auto; max-width:100%; }
+    .scroll { overflow-x:auto; max-width:100%; }
   </style>
 </head>
 <body>
+  <!-- System Lock -->
   <div id="system-lock" class="hidden" style="position:fixed;inset:0;background:#000;z-index:1000;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;">
     <h2>🔒 Sistem Tidak Aktif</h2>
     <p>Masukkan kata laluan operasi:</p>
@@ -51,15 +92,15 @@
     <button onclick="unlockSystem()">Buka Sistem</button>
   </div>
 
-  <!-- LOGIN -->
+  <!-- Login Screen -->
   <div id="login-screen" class="container">
-    <h1 class="logo">SPIMF</h1>
+    <h1>SPIMF</h1>
     <p>Sistem Pengurusan Identiti Membership FareezOnzz</p>
-    <div style="text-align:center; margin:20px 0;">
+    <div style="text-align:center; margin:15px 0;">
       <div id="stats-display" style="color:green; font-weight:bold;"></div>
       <div id="system-countdown" class="countdown"></div>
     </div>
-    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:20px 0;">
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:15px 0;">
       <button onclick="showLogin('phone')">📞 Telefon</button>
       <button onclick="showLogin('idcard')">🆔 ID</button>
       <button onclick="showLogin('kode')">🔑 Kode</button>
@@ -71,46 +112,46 @@
     <div id="login-forms"></div>
   </div>
 
-  <!-- DASHBOARD MEMBERSHIP -->
+  <!-- Membership Dashboard -->
   <div id="membership-dashboard" class="hidden container">
-    <h2 class="logo">SPIMF - Membership Dashboard</h2>
+    <h2>SPIMF - Membership Dashboard</h2>
     <div id="member-welcome" class="notice"></div>
     <div id="admin-message" class="notice" style="display:none;"></div>
 
     <!-- Profile -->
     <div class="section">
       <h3>Profil Anda</h3>
-      <img id="profile-img" src="" alt="Profile" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
+      <img id="profile-img" src="" alt="Profil" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
       <div class="editable-field">
         <input type="text" id="profile-link" placeholder="Google Drive Link" />
-        <button onclick="saveProfileLink()">Simpan</button>
+        <button onclick="saveProfileLink()">Simpan Profil</button>
       </div>
       <p><strong>Pangkat:</strong> <span id="current-rank"></span></p>
       <p><strong>Penyumbangan:</strong> <span id="contribution"></span></p>
-      <p><strong>BAKDF Status:</strong> <span id="bakdf-status"></span></p>
-      <p><strong>BAKDF Ulasan:</strong> <span id="bakdf-review"></span></p>
+      <p><strong>Status BAKDF:</strong> <span id="bakdf-status"></span></p>
+      <p><strong>Ulasan BAKDF:</strong> <span id="bakdf-review"></span></p>
     </div>
 
     <!-- Main Info -->
-    <div class="section" style="border-left-color:#000;">
+    <div class="section black-white">
       <h3>Maklumat Utama (Boleh Edit)</h3>
       <div id="main-info-fields"></div>
     </div>
 
     <!-- Social Media -->
-    <div class="section" style="border-left-color:red;">
-      <h3>Sosial Media (Boleh Edit)</h3>
+    <div class="section red">
+      <h3>Maklumat Media Sosial (Boleh Edit)</h3>
       <div id="social-fields"></div>
     </div>
 
     <!-- Questions -->
-    <div class="section" style="border-left-color:#84cc16;">
+    <div class="section yellow-green">
       <h3>Soalan Tentang Anda (Boleh Edit)</h3>
       <div id="question-fields"></div>
     </div>
 
     <!-- Additional -->
-    <div class="section" style="border-left-color:#22c55e;">
+    <div class="section">
       <h3>Maklumat Tambahan</h3>
       <div id="additional-info"></div>
     </div>
@@ -124,16 +165,16 @@
       <p><strong>Hubungi Sokongan:</strong><br>
         pfareezonzz01@gmail.com<br>
         developerfareezonzz@gmail.com<br>
-        [Nombor Data: <span id="row-number"></span>]
+        [Data #: <span id="row-number"></span>]
       </p>
       <textarea id="feedback" placeholder="Hantar maklum balas..." style="height:80px;"></textarea>
       <button onclick="sendFeedback()">Hantar</button>
     </div>
   </div>
 
-  <!-- DASHBOARD ADMIN -->
+  <!-- Admin Dashboard -->
   <div id="admin-dashboard" class="hidden container admin-mode">
-    <h2 class="logo">SPIMF - Admin Dashboard</h2>
+    <h2>SPIMF - Admin Dashboard</h2>
     <div id="admin-welcome" class="notice"></div>
     <div id="spimf-notice" class="notice" style="display:none;"></div>
     <div id="admin-notice" class="notice" style="display:none;"></div>
@@ -144,34 +185,34 @@
       <img id="admin-profile-img" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
       <div class="editable-field">
         <input type="text" id="admin-profile-link" placeholder="Google Drive Link" />
-        <button onclick="saveAdminProfileLink()">Simpan</button>
+        <button onclick="saveAdminProfileLink()">Simpan Profil</button>
       </div>
       <div id="admin-highlights"></div>
     </div>
 
-    <!-- Admin Info (Editable) -->
+    <!-- Admin Editable -->
     <div class="section" style="border-left-color:var(--admin-primary);">
       <h3>Maklumat Admin (Boleh Edit)</h3>
       <div id="admin-editable-fields"></div>
     </div>
 
-    <!-- MEMBERSHIP TABLE -->
+    <!-- Premium Members Table -->
     <div class="section">
-      <h3>Data Ahli</h3>
-      <div class="scroll-table">
-        <table id="membership-table">
-          <thead><tr><th>BIL</th><th>Nama</th><th>Pangkat</th><th>No. Telefon</th><th>Status</th></tr></thead>
+      <h3>🏆 SPIMF High-Ranking Member Table</h3>
+      <div class="scroll">
+        <table id="premium-table">
+          <thead><tr><th>BIL</th><th>Nama Ahli</th><th>Pangkat</th><th>Penyumbangan</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
 
-    <!-- ADMIN TABLE -->
+    <!-- Admin Chart -->
     <div class="section">
-      <h3>Jawatankuasa Admin</h3>
-      <div class="scroll-table">
-        <table id="admin-table">
-          <thead><tr><th>BIL</th><th>Nama</th><th>Pangkat</th><th>Markah</th><th>Tarikh Jawatankuasa</th></tr></thead>
+      <h3>📊 SPIMF System Organization Chart Table</h3>
+      <div class="scroll">
+        <table id="admin-chart-table">
+          <thead><tr><th>BIL</th><th>Nama Admin</th><th>Pangkat</th><th>Markah</th><th>Tarikh Jawatankuasa</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -180,10 +221,9 @@
     <button onclick="adminLogout()">Log Keluar</button>
   </div>
 
-  <!-- SCRIPT -->
   <script>
     // === CONFIG ===
-    const SCRIPT_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXX/exec'; // GANTIKAN
+    const SCRIPT_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXX/exec'; // GANTIKAN DENGAN WEB APP URL ANDA
     const SYSTEM_PASSWORD = 'SPIMFONWER';
     let currentUser = null;
     let currentRow = null;
@@ -193,7 +233,7 @@
     function callAppScript(action, params = {}, method = 'GET') {
       const url = new URL(SCRIPT_URL);
       url.searchParams.set('action', action);
-      for (const k in params) url.searchParams.set(k, params[k]);
+      for (const k in params) url.searchParams.set(k, String(params[k]));
       return fetch(url.toString(), {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -214,16 +254,12 @@
     function checkSystemTime() {
       const now = new Date();
       const ms = now.getTime();
-      const tz = 'Asia/Kuala_Lumpur';
       const kl = new Date(ms + (now.getTimezoneOffset() + 480) * 60000);
       const hour = kl.getHours();
       const minute = kl.getMinutes();
       const totalMinutes = hour * 60 + minute;
 
-      const activeStart = 6 * 60; // 6:00 AM
-      const activeEnd = (2 + 24) * 60 + 45; // 2:45 AM next day
-
-      const isActive = totalMinutes >= activeStart || totalMinutes <= (2*60 + 45);
+      const isActive = totalMinutes >= 6*60 || totalMinutes <= (2*60 + 45);
       const unlockExpiry = localStorage.getItem('spimf_unlocked_until');
       const isUnlocked = unlockExpiry && new Date(unlockExpiry) > new Date();
 
@@ -231,12 +267,12 @@
         document.getElementById('system-lock').classList.remove('hidden');
       } else {
         document.getElementById('system-lock').classList.add('hidden');
-        updateCountdown(kl, totalMinutes);
+        updateCountdown(totalMinutes);
       }
     }
 
-    function updateCountdown(kl, totalMinutes) {
-      const activeEnd = (2 + 24) * 60 + 45; // 2:45 AM
+    function updateCountdown(totalMinutes) {
+      const activeEnd = (2 + 24) * 60 + 45;
       let minutesUntilClose;
       if (totalMinutes <= (2*60 + 45)) {
         minutesUntilClose = (2*60 + 45) - totalMinutes;
@@ -255,7 +291,7 @@
     function updateStats() {
       callAppScript('getStats').then(r => {
         if (r.success) {
-          document.getElementById('stats-display').innerHTML = 
+          document.getElementById('stats-display').textContent = 
             `Ahli: ${r.membershipCount} | Admin: ${r.adminCount} | Premium: ${r.premiumCount}`;
         }
       });
@@ -346,7 +382,6 @@
       document.getElementById('account-status').textContent = currentUser[32] || '';
       document.getElementById('row-number').textContent = currentRow;
 
-      // Main Info Fields
       const mainFields = [
         { label: 'Nama', col: 6, type: 'text' },
         { label: 'Umur', col: 7, type: 'number' },
@@ -360,14 +395,13 @@
         { label: 'Impian Kerjaya', col: 25, type: 'text' },
         { label: 'Email', col: 1, type: 'text' }
       ];
-      renderEditableFields('main-info-fields', mainFields, currentUser, 2);
+      renderEditableFields('main-info-fields', mainFields, currentUser, 'membership');
 
-      // Social Media
       const hasSocial = currentUser[18] === 'Ada';
       document.getElementById('social-fields').innerHTML = `
         <label><input type="radio" name="hasSocial" value="Ada" ${hasSocial?'checked':''} onchange="toggleSocialFields(true)"> Ada</label>
         <label><input type="radio" name="hasSocial" value="Tiada" ${!hasSocial?'checked':''} onchange="toggleSocialFields(false)"> Tiada</label>
-        <div id="social-detail" style="${hasSocial?'':'display:none'}">
+        <div id="social-detail" style="${hasSocial?'display:block':'display:none'}">
           <input placeholder="TikTok" value="${currentUser[19] || ''}" id="sm-tt" />
           <input placeholder="Instagram" value="${currentUser[20] || ''}" id="sm-ig" />
           <input placeholder="YouTube" value="${currentUser[21] || ''}" id="sm-yt" />
@@ -376,15 +410,13 @@
         </div>
       `;
 
-      // Questions
       const qFields = [
         { label: 'Suka Membaiki?', col: 24, type: 'select', options: ['Ya','Tidak'] },
         { label: 'Subjek Kegemaran', col: 26, type: 'text' },
         { label: 'Subjek Sukar', col: 27, type: 'text' }
       ];
-      renderEditableFields('question-fields', qFields, currentUser, 2);
+      renderEditableFields('question-fields', qFields, currentUser, 'membership');
 
-      // Additional
       document.getElementById('additional-info').innerHTML = `
         <p>Anda Mengenali Kami Sebagai: ${currentUser[4] || ''}</p>
         <p>Tarikh Semasa: ${currentUser[3] || ''}</p>
@@ -395,7 +427,6 @@
         <p>Kata Laluan: ${currentUser[17] || ''} <button class="copy-btn" onclick="copyText('${currentUser[17] || ''}')">Salin</button></p>
       `;
 
-      // Auto-refresh admin message
       loadAdminMessage();
       setInterval(loadAdminMessage, 10000);
     }
@@ -405,30 +436,29 @@
       const el = document.getElementById('admin-message');
       if (msg) {
         el.style.display = 'block';
-        el.innerHTML = `📢 Mesej Admin: ${msg} <button onclick="this.parentElement.style.display='none'">✕</button>`;
+        el.innerHTML = `📢 Mesej Admin: ${msg} <button class="close" onclick="this.parentElement.style.display='none'">✕</button>`;
       }
     }
 
-    function renderEditableFields(containerId, fields, data, sheetTypeInt) {
+    function renderEditableFields(containerId, fields, data, sheetType) {
       let html = '';
       fields.forEach(f => {
         const val = data[f.col] || '';
         if (f.type === 'select') {
           html += `<div class="editable-field"><label>${f.label}:</label>
             <select id="edit-${f.col}">${f.options.map(o => `<option ${val===o?'selected':''}>${o}</option>`).join('')}</select>
-            <button onclick="saveField(${f.col}, ${sheetTypeInt})">Simpan</button></div>`;
+            <button onclick="saveField(${f.col}, '${sheetType}')">Simpan</button></div>`;
         } else {
           html += `<div class="editable-field"><label>${f.label}:</label>
             <input type="${f.type}" id="edit-${f.col}" value="${val}" />
-            <button onclick="saveField(${f.col}, ${sheetTypeInt})">Simpan</button></div>`;
+            <button onclick="saveField(${f.col}, '${sheetType}')">Simpan</button></div>`;
         }
       });
       document.getElementById(containerId).innerHTML = html;
     }
 
-    function saveField(col, sheetTypeInt) {
+    function saveField(col, sheetType) {
       const val = document.getElementById(`edit-${col}`).value;
-      const sheetType = sheetTypeInt === 2 ? 'membership' : 'admin';
       callAppScript('updateCell', { sheetType, row: currentRow, columnIndex: col, value: val }, 'POST').then(r => {
         if (r.success) alert('Berjaya dikemaskini!');
       });
@@ -506,7 +536,7 @@
       document.getElementById('admin-highlights').innerHTML = `
         <p><strong>Pangkat:</strong> ${currentUser[6]}</p>
         <p><strong>Penyumbangan:</strong> ${currentUser[15]}</p>
-        <p><strong>Tarikh Jawatankuasa:</strong> ${currentUser[10]}</p>
+        <p><strong>Tarikh Jawatankuasa:</strong> ${currentUser[9]}</p>
         <p><strong>Status:</strong> ${currentUser[7]}</p>
         <p><strong>Markah:</strong> ${currentUser[12]}</p>
         <p><strong>Misi:</strong> ${currentUser[13]}</p>
@@ -531,19 +561,18 @@
       });
       document.getElementById('admin-editable-fields').innerHTML = html;
 
-      // Load tables
-      loadMembershipTable();
-      loadAdminCommitteeTable();
-
       // Notices
       if (currentUser[14]) {
         document.getElementById('spimf-notice').style.display = 'block';
-        document.getElementById('spimf-notice').textContent = `📢 SPIMF: ${currentUser[14]}`;
+        document.getElementById('spimf-notice').innerHTML = `📢 SPIMF: ${currentUser[14]} <button class="close" onclick="this.parentElement.style.display='none'">✕</button>`;
       }
       if (currentUser[15]) {
         document.getElementById('admin-notice').style.display = 'block';
-        document.getElementById('admin-notice').textContent = `📢 Admin: ${currentUser[15]}`;
+        document.getElementById('admin-notice').innerHTML = `📢 Admin: ${currentUser[15]} <button class="close" onclick="this.parentElement.style.display='none'">✕</button>`;
       }
+
+      loadPremiumTable();
+      loadAdminChartTable();
     }
 
     function saveAdminField(col) {
@@ -563,52 +592,39 @@
       });
     }
 
-    function loadMembershipTable() {
-      callAppScript('fetchSheet', { sheetType: 'membership' }).then(r => {
+    function loadPremiumTable() {
+      callAppScript('getPremiumMembers').then(r => {
         if (r.success) {
-          const tbody = document.querySelector('#membership-table tbody');
+          const tbody = document.querySelector('#premium-table tbody');
           tbody.innerHTML = '';
-          r.data.forEach((row, i) => {
+          r.data.forEach((item, i) => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${i+1}</td>
-              <td>${row[6] || ''}</td>
-              <td>${row[34] || ''}</td>
-              <td>${row[9] || ''}</td>
-              <td>${row[32] || ''}</td>
-            `;
+            tr.innerHTML = `<td>${i+1}</td><td>${item.name}</td><td>${item.rank}</td><td>${item.contribution}</td>`;
             tbody.appendChild(tr);
           });
         }
       });
     }
 
-    function loadAdminCommitteeTable() {
-      callAppScript('fetchSheet', { sheetType: 'admin' }).then(r => {
+    function loadAdminChartTable() {
+      callAppScript('getAdminChart').then(r => {
         if (r.success) {
-          const tbody = document.querySelector('#admin-table tbody');
+          const tbody = document.querySelector('#admin-chart-table tbody');
           tbody.innerHTML = '';
-          r.data.forEach((row, i) => {
-            const tr = document.createElement('tr');
-            const committeeDate = row[9] || '';
-            let dateCell = committeeDate;
-            if (committeeDate) {
-              const d = new Date(committeeDate);
+          r.data.forEach((item, i) => {
+            let committeeHtml = item.committeeDate;
+            if (item.committeeDate) {
+              const d = new Date(item.committeeDate);
               if (!isNaN(d.getTime())) {
                 const diffTime = d - new Date();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays <= 7) {
-                  dateCell = `<span class="danger">${committeeDate} (${diffDays} hari lagi)</span>`;
+                  committeeHtml = `<span class="danger">${item.committeeDate} (${diffDays} hari lagi)</span>`;
                 }
               }
             }
-            tr.innerHTML = `
-              <td>${i+1}</td>
-              <td>${row[0] || ''}</td>
-              <td>${row[6] || ''}</td>
-              <td>${row[12] || ''}</td>
-              <td>${dateCell}</td>
-            `;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${i+1}</td><td>${item.name}</td><td>${item.rank}</td><td>${item.totalMark}</td><td>${committeeHtml}</td>`;
             tbody.appendChild(tr);
           });
         }
