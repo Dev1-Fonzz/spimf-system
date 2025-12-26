@@ -14,7 +14,7 @@
       --danger: #ef4444;
       --admin-primary: #ec4899;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', system-ui, sans-serif; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
     body {
       background:#f8fafc;
       padding:15px;
@@ -28,12 +28,8 @@
       border-radius:12px;
       padding:20px;
       box-shadow:0 4px 20px rgba(0,0,0,0.08);
-      margin-bottom:20px;
     }
-    h1, h2, h3 {
-      color:var(--primary);
-      margin:10px 0;
-    }
+    h1, h2, h3 { color:var(--primary); margin:10px 0; }
     button {
       background:var(--primary);
       color:white;
@@ -43,9 +39,7 @@
       margin:5px;
       cursor:pointer;
       font-weight:bold;
-      transition:opacity 0.2s;
     }
-    button:hover { opacity:0.9; }
     .admin-btn { background:var(--admin-primary); }
     .guest-btn { background:#64748b; }
     input, textarea, select {
@@ -54,7 +48,6 @@
       margin:5px 0;
       border:1px solid #ddd;
       border-radius:6px;
-      font-size:14px;
     }
     .section {
       margin:15px 0;
@@ -62,9 +55,6 @@
       border-left:4px solid var(--secondary);
       background:#f9fafb;
     }
-    .section.black-white { border-left-color:#000; }
-    .section.red { border-left-color:#ef4444; }
-    .section.yellow-green { border-left-color:#84cc16; }
     .notice {
       background:#dcfce7;
       color:#166534;
@@ -88,16 +78,8 @@
     }
     .danger { color:var(--danger); }
     .hidden { display:none; }
-    table {
-      width:100%;
-      border-collapse:collapse;
-      margin:10px 0;
-    }
-    th, td {
-      padding:10px;
-      text-align:left;
-      border:1px solid #e2e8f0;
-    }
+    table { width:100%; border-collapse:collapse; margin:10px 0; }
+    th, td { padding:10px; text-align:left; border:1px solid #e2e8f0; }
     th { background:#f1f5f9; }
     .scroll { overflow-x:auto; max-width:100%; }
     .copy-btn {
@@ -156,27 +138,25 @@
     <div class="section">
       <h3>Profil Anda</h3>
       <img id="profile-img" class="profile" src="" alt="Profil" />
-      <div>
-        <input type="text" id="profile-link" placeholder="Google Drive Link" />
-        <button onclick="saveProfileLink()">Simpan Profil</button>
-      </div>
+      <input type="text" id="profile-link" placeholder="Google Drive Link" />
+      <button onclick="saveProfileLink()">Simpan Profil</button>
       <p><strong>Pangkat:</strong> <span id="current-rank"></span></p>
       <p><strong>Penyumbangan:</strong> <span id="contribution"></span></p>
       <p><strong>Status BAKDF:</strong> <span id="bakdf-status"></span></p>
       <p><strong>Ulasan BAKDF:</strong> <span id="bakdf-review"></span></p>
     </div>
 
-    <div class="section black-white">
+    <div class="section" style="border-left-color:#000;">
       <h3>Maklumat Utama (Boleh Edit)</h3>
       <div id="main-info-fields"></div>
     </div>
 
-    <div class="section red">
+    <div class="section" style="border-left-color:#ef4444;">
       <h3>Maklumat Media Sosial (Boleh Edit)</h3>
       <div id="social-fields"></div>
     </div>
 
-    <div class="section yellow-green">
+    <div class="section" style="border-left-color:#84cc16;">
       <h3>Soalan Tentang Anda (Boleh Edit)</h3>
       <div id="question-fields"></div>
     </div>
@@ -211,10 +191,8 @@
     <div class="section">
       <h3>Profil Admin</h3>
       <img id="admin-profile-img" class="profile" src="" />
-      <div>
-        <input type="text" id="admin-profile-link" placeholder="Google Drive Link" />
-        <button onclick="saveAdminProfileLink()">Simpan Profil</button>
-      </div>
+      <input type="text" id="admin-profile-link" placeholder="Google Drive Link" />
+      <button onclick="saveAdminProfileLink()">Simpan Profil</button>
       <div id="admin-highlights"></div>
     </div>
 
@@ -247,8 +225,8 @@
   </div>
 
   <script>
-    // === CONFIG ===
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyM2gNx13zX5IcP0ajH1_Gi8OF7zONAAZZzXrlj56-Xk7wFFve9O_V7igoKCmq3ZiqR/exec'; // GANTIKAN DENGAN WEB APP URL ANDA
+    // GANTIKAN DENGAN WEB APP URL ANDA
+    const SCRIPT_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXX/exec';
     const SYSTEM_PASSWORD = 'SPIMFONWER';
     let currentUser = null;
     let currentRow = null;
@@ -284,10 +262,14 @@
       }
     }
 
-    function checkSystemTime() {
+    function getKLClock() {
       const now = new Date();
-      const ms = now.getTime();
-      const kl = new Date(ms + (now.getTimezoneOffset() + 480) * 60000);
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (8 * 3600000)); // UTC+8
+    }
+
+    function checkSystemTime() {
+      const kl = getKLClock();
       const hour = kl.getHours();
       const minute = kl.getMinutes();
       const totalMinutes = hour * 60 + minute;
@@ -403,6 +385,7 @@
     function loadMembershipDashboard() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('membership-dashboard').classList.remove('hidden');
+
       document.getElementById('member-welcome').textContent = `🗳️ Hai, ${currentUser[6]}! Selamat kembali di SPIMF.`;
       document.getElementById('profile-img').src = currentUser[5] || 'https://via.placeholder.com/100?text=No+Photo';
       document.getElementById('profile-link').value = currentUser[5] || '';
@@ -559,6 +542,7 @@
     function loadAdminDashboard() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('admin-dashboard').classList.remove('hidden');
+
       document.getElementById('admin-welcome').textContent = `🎖️ Hai, ${currentUser[0]}! Selamat kembali di SPIMF.`;
       document.getElementById('admin-profile-img').src = currentUser[5] || 'https://via.placeholder.com/100?text=Admin';
       document.getElementById('admin-profile-link').value = currentUser[5] || '';
@@ -626,7 +610,7 @@
         if (r.success) {
           const tbody = document.querySelector('#premium-table tbody');
           tbody.innerHTML = '';
-          r.premiumMembers.forEach((item, i) => {
+          r.data.forEach((item, i) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${i+1}</td><td>${item.name}</td><td>${item.rank}</td><td>${item.contribution}</td>`;
             tbody.appendChild(tr);
@@ -640,7 +624,7 @@
         if (r.success) {
           const tbody = document.querySelector('#admin-chart-table tbody');
           tbody.innerHTML = '';
-          r.adminChart.forEach((item, i) => {
+          r.data.forEach((item, i) => {
             let committeeHtml = item.committeeDate;
             if (item.committeeDate) {
               const d = new Date(item.committeeDate);
