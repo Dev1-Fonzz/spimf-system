@@ -73,19 +73,54 @@
       margin:15px 0;
       position:relative;
     }
-    .notice button.close { position:absolute; top:8px; right:8px; background:#16a085; font-size:12px; padding:2px 6px; }
-    .countdown { text-align:center; font-weight:bold; margin:10px 0; }
+    .notice button.close {
+      position:absolute;
+      top:8px;
+      right:8px;
+      background:#16a085;
+      font-size:12px;
+      padding:2px 6px;
+    }
+    .countdown {
+      text-align:center;
+      font-weight:bold;
+      margin:10px 0;
+    }
     .danger { color:var(--danger); }
     .hidden { display:none; }
-    table { width:100%; border-collapse:collapse; margin:10px 0; }
-    th, td { padding:10px; text-align:left; border:1px solid #e2e8f0; }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin:10px 0;
+    }
+    th, td {
+      padding:10px;
+      text-align:left;
+      border:1px solid #e2e8f0;
+    }
     th { background:#f1f5f9; }
     .scroll { overflow-x:auto; max-width:100%; }
+    .copy-btn {
+      background:#64748b;
+      color:white;
+      border:none;
+      padding:4px 8px;
+      border-radius:4px;
+      font-size:12px;
+      cursor:pointer;
+    }
+    img.profile {
+      width:100px;
+      height:100px;
+      border-radius:50%;
+      object-fit:cover;
+      margin:10px 0;
+    }
   </style>
 </head>
 <body>
   <!-- System Lock -->
-  <div id="system-lock" class="hidden" style="position:fixed;inset:0;background:#000;z-index:1000;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;">
+  <div id="system-lock" class="hidden" style="position:fixed; inset:0; background:#000; z-index:1000; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
     <h2>🔒 Sistem Tidak Aktif</h2>
     <p>Masukkan kata laluan operasi:</p>
     <input type="password" id="sys-pass" placeholder="SPIMFONWER" />
@@ -118,11 +153,10 @@
     <div id="member-welcome" class="notice"></div>
     <div id="admin-message" class="notice" style="display:none;"></div>
 
-    <!-- Profile -->
     <div class="section">
       <h3>Profil Anda</h3>
-      <img id="profile-img" src="" alt="Profil" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
-      <div class="editable-field">
+      <img id="profile-img" class="profile" src="" alt="Profil" />
+      <div>
         <input type="text" id="profile-link" placeholder="Google Drive Link" />
         <button onclick="saveProfileLink()">Simpan Profil</button>
       </div>
@@ -132,31 +166,26 @@
       <p><strong>Ulasan BAKDF:</strong> <span id="bakdf-review"></span></p>
     </div>
 
-    <!-- Main Info -->
     <div class="section black-white">
       <h3>Maklumat Utama (Boleh Edit)</h3>
       <div id="main-info-fields"></div>
     </div>
 
-    <!-- Social Media -->
     <div class="section red">
       <h3>Maklumat Media Sosial (Boleh Edit)</h3>
       <div id="social-fields"></div>
     </div>
 
-    <!-- Questions -->
     <div class="section yellow-green">
       <h3>Soalan Tentang Anda (Boleh Edit)</h3>
       <div id="question-fields"></div>
     </div>
 
-    <!-- Additional -->
     <div class="section">
       <h3>Maklumat Tambahan</h3>
       <div id="additional-info"></div>
     </div>
 
-    <!-- System Settings -->
     <div class="section">
       <h3>🧾 Tetapan Sistem</h3>
       <p>Status Akaun: <span id="account-status"></span></p>
@@ -179,24 +208,21 @@
     <div id="spimf-notice" class="notice" style="display:none;"></div>
     <div id="admin-notice" class="notice" style="display:none;"></div>
 
-    <!-- Admin Profile -->
     <div class="section">
       <h3>Profil Admin</h3>
-      <img id="admin-profile-img" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover;" />
-      <div class="editable-field">
+      <img id="admin-profile-img" class="profile" src="" />
+      <div>
         <input type="text" id="admin-profile-link" placeholder="Google Drive Link" />
         <button onclick="saveAdminProfileLink()">Simpan Profil</button>
       </div>
       <div id="admin-highlights"></div>
     </div>
 
-    <!-- Admin Editable -->
     <div class="section" style="border-left-color:var(--admin-primary);">
       <h3>Maklumat Admin (Boleh Edit)</h3>
       <div id="admin-editable-fields"></div>
     </div>
 
-    <!-- Premium Members Table -->
     <div class="section">
       <h3>🏆 SPIMF High-Ranking Member Table</h3>
       <div class="scroll">
@@ -207,7 +233,6 @@
       </div>
     </div>
 
-    <!-- Admin Chart -->
     <div class="section">
       <h3>📊 SPIMF System Organization Chart Table</h3>
       <div class="scroll">
@@ -230,15 +255,23 @@
     let userRole = null;
 
     // === UTILS ===
-    function callAppScript(action, params = {}, method = 'GET') {
+    async function callAppScript(action, params = {}, method = 'GET') {
       const url = new URL(SCRIPT_URL);
       url.searchParams.set('action', action);
       for (const k in params) url.searchParams.set(k, String(params[k]));
-      return fetch(url.toString(), {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: method === 'POST' ? JSON.stringify(params) : null
-      }).then(r => r.json());
+      try {
+        const res = await fetch(url.toString(), {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: method === 'POST' ? JSON.stringify(params) : null
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error('Fetch error:', err);
+        alert('Ralat sistem. Sila cuba sebentar lagi.');
+        return { success: false, error: err.message };
+      }
     }
 
     function unlockSystem() {
@@ -279,7 +312,6 @@
       } else {
         minutesUntilClose = (24*60 - totalMinutes) + (2*60 + 45);
       }
-
       const cdEl = document.getElementById('system-countdown');
       if (minutesUntilClose <= 5) {
         cdEl.innerHTML = `⚠️ Sistem akan ditutup dalam <span class="danger">${minutesUntilClose} minit</span>`;
@@ -367,11 +399,10 @@
       doLogin('membership', { phone: res[9] });
     }
 
-    // === DASHBOARD ===
+    // === DASHBOARD: MEMBERSHIP ===
     function loadMembershipDashboard() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('membership-dashboard').classList.remove('hidden');
-
       document.getElementById('member-welcome').textContent = `🗳️ Hai, ${currentUser[6]}! Selamat kembali di SPIMF.`;
       document.getElementById('profile-img').src = currentUser[5] || 'https://via.placeholder.com/100?text=No+Photo';
       document.getElementById('profile-link').value = currentUser[5] || '';
@@ -445,11 +476,11 @@
       fields.forEach(f => {
         const val = data[f.col] || '';
         if (f.type === 'select') {
-          html += `<div class="editable-field"><label>${f.label}:</label>
+          html += `<div><label>${f.label}:</label>
             <select id="edit-${f.col}">${f.options.map(o => `<option ${val===o?'selected':''}>${o}</option>`).join('')}</select>
             <button onclick="saveField(${f.col}, '${sheetType}')">Simpan</button></div>`;
         } else {
-          html += `<div class="editable-field"><label>${f.label}:</label>
+          html += `<div><label>${f.label}:</label>
             <input type="${f.type}" id="edit-${f.col}" value="${val}" />
             <button onclick="saveField(${f.col}, '${sheetType}')">Simpan</button></div>`;
         }
@@ -524,11 +555,10 @@
       document.getElementById('login-screen').classList.remove('hidden');
     }
 
-    // === ADMIN DASHBOARD ===
+    // === DASHBOARD: ADMIN ===
     function loadAdminDashboard() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('admin-dashboard').classList.remove('hidden');
-
       document.getElementById('admin-welcome').textContent = `🎖️ Hai, ${currentUser[0]}! Selamat kembali di SPIMF.`;
       document.getElementById('admin-profile-img').src = currentUser[5] || 'https://via.placeholder.com/100?text=Admin';
       document.getElementById('admin-profile-link').value = currentUser[5] || '';
@@ -552,7 +582,7 @@
       let html = '';
       adminFields.forEach(f => {
         if (f.editable) {
-          html += `<div class="editable-field"><label>${f.label}:</label>
+          html += `<div><label>${f.label}:</label>
             <input type="text" id="admin-edit-${f.col}" value="${currentUser[f.col] || ''}" />
             <button onclick="saveAdminField(${f.col})">Simpan</button></div>`;
         } else {
@@ -561,7 +591,6 @@
       });
       document.getElementById('admin-editable-fields').innerHTML = html;
 
-      // Notices
       if (currentUser[14]) {
         document.getElementById('spimf-notice').style.display = 'block';
         document.getElementById('spimf-notice').innerHTML = `📢 SPIMF: ${currentUser[14]} <button class="close" onclick="this.parentElement.style.display='none'">✕</button>`;
@@ -597,7 +626,7 @@
         if (r.success) {
           const tbody = document.querySelector('#premium-table tbody');
           tbody.innerHTML = '';
-          r.data.forEach((item, i) => {
+          r.premiumMembers.forEach((item, i) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${i+1}</td><td>${item.name}</td><td>${item.rank}</td><td>${item.contribution}</td>`;
             tbody.appendChild(tr);
@@ -611,7 +640,7 @@
         if (r.success) {
           const tbody = document.querySelector('#admin-chart-table tbody');
           tbody.innerHTML = '';
-          r.data.forEach((item, i) => {
+          r.adminChart.forEach((item, i) => {
             let committeeHtml = item.committeeDate;
             if (item.committeeDate) {
               const d = new Date(item.committeeDate);
