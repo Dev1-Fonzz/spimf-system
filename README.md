@@ -16,4 +16,4 @@
    - **Who has access**: **Anyone**
 4. Salin **Web App URL** dan gantikan dalam `index.html` pada:
    ```js
-   const SCRIPT_URL = 'https://script.google.com/macros/s/.../exec';
+   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyM2gNx13zX5IcP0ajH1_Gi8OF7zONAAZZzXrlj56-Xk7wFFve9O_V7igoKCmq3ZiqR/exec';
